@@ -27,6 +27,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   //zmienne i metody
+  int _selectedProject =
+      0; //aktualnie klikniety projekt, potrzebny do _getTasks()
+  int _selectedTask = 0; //analogicznie
 
   //tymczasowa zmienna z projektami
   List projects = [
@@ -94,18 +97,63 @@ class _MyHomePageState extends State<MyHomePage> {
             '#hehe',
           ]
         },
+        {
+          'taskTitle': 'B zadanie 3',
+          'description': 'to jest trzecie zadanie projektu B',
+          'begin': DateTime(2021, 1, 4),
+          'end': DateTime(2021, 1, 7),
+          'daysLeft':
+              0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'tags': [
+            '#stop',
+            '#a',
+            '#hehe',
+          ]
+        },
       ],
-    }
+    },
+    {
+      'projectTitle': 'projekt PIPI',
+      'deadline': DateTime(2021, 10, 1),
+      'progress': 0, //FUNKCJA ZEBY OBLICZAC NA PODSTAWIE % WYKONANIA ZADAN
+      'tasks': [
+        {
+          'taskTitle': 'PP zadanie 1',
+          'description': 'to jest pierwsze zadanie projektu PP',
+          'begin': DateTime(2021, 1, 1),
+          'end': DateTime(2021, 1, 3),
+          'daysLeft':
+              0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'tags': [
+            '#work',
+            '#a',
+            '#it',
+          ]
+        },
+      ],
+    },
   ];
-
-  void showTasks(int n) {
-    
-  }
 
   List<Widget> _getTasks() {
     List<Widget> tasksList = [];
 
-
+    for (int i = 0; i < projects[_selectedProject]['tasks'].length; i++) {
+      tasksList.add(OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          primary: Colors.white,
+          backgroundColor: Colors.blue,
+          textStyle: TextStyle(
+            fontSize: 18,
+          ),
+          padding: const EdgeInsets.all(20.0),
+        ),
+        onPressed: () {
+          //_showDetails(); //nie wiem, w jakis sposob aktualizowac
+        },
+        child: Text(projects[_selectedProject]['tasks'][i]['taskTitle']),
+      ));
+      tasksList.add(Padding(padding: const EdgeInsets.symmetric(vertical: 3.0))); //moze szybsze by bylo opakowanie przycisku w container
+    }
 
     return tasksList;
   }
@@ -120,12 +168,18 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: Colors.blue,
           textStyle: TextStyle(
             fontSize: 18,
-            ),
+          ),
           padding: const EdgeInsets.all(20.0),
         ),
-        onPressed: () => showTasks(i),
+        onPressed: () {
+          //_showTasks(); //nie wiem, w jakis sposob aktualizowac
+          setState(() {
+            _selectedProject = i;
+          });
+        },
         child: Text(projects[i]['projectTitle']),
       ));
+      projectsList.add(Padding(padding: const EdgeInsets.symmetric(vertical: 3.0))); //moze szybsze by bylo opakowanie przycisku w container
     }
     return projectsList;
   }
@@ -137,14 +191,16 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        //mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           Container(
-            width: 200.0,
+            width: 250.0,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            color: Color(0xff83b0f7),
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Text(
                     'projekty',
                     style: TextStyle(
@@ -155,40 +211,61 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.all(5.0),
+                    //padding: const EdgeInsets.all(10.0),
                     children: _getProjects(),
                   ),
                 ),
               ],
             ),
           ),
-          Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  'zadania',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
-            ],
+          Padding(
+            padding: const EdgeInsets.all(10.0),
           ),
-          Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  'szczegóły',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+          Container(
+            width: 250.0,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            color: Color(0xff83b0f7),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    'zadania',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              )
-            ],
+                Expanded(
+                  child: ListView(
+                      //padding: const EdgeInsets.all(10.0),
+                      children: _getTasks()),
+                )
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+          ),
+          Container(
+            width: 250.0,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            color: Color(0xff83b0f7),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    'szczegóły',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
           Column(
             children: <Widget>[
