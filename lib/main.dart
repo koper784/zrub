@@ -42,13 +42,15 @@ class _MyHomePageState extends State<MyHomePage> {
           'taskTitle': 'A zadanie 1',
           'description': 'to jest pierwsze zadanie projektu A',
           'begin': DateTime(2021, 1, 1),
-          'end': DateTime(2021, 1, 3),
+          'end': DateTime(2021, 4, 15),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'isDone': false,
           'tags': [
             '#work',
             '#a',
             '#it',
+            '#pipipupu'
           ]
         },
         {
@@ -58,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'end': DateTime(2021, 1, 4),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'isDone': false,
           'tags': [
             '#stop',
             '#a',
@@ -78,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'end': DateTime(2021, 1, 3),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'isDone': false,
           'tags': [
             '#work',
             '#a',
@@ -91,6 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'end': DateTime(2021, 1, 4),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'isDone': false,
           'tags': [
             '#stop',
             '#a',
@@ -104,6 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'end': DateTime(2021, 1, 7),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'isDone': false,
           'tags': [
             '#stop',
             '#a',
@@ -124,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'end': DateTime(2021, 1, 3),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
+          'isDone': false,
           'tags': [
             '#work',
             '#a',
@@ -133,6 +140,41 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     },
   ];
+
+  List<Widget> _getDetails() {
+    DateTime taskEnd = projects[_selectedProject]['tasks'][_selectedTask]['end'];
+    Duration daysLeft = taskEnd.isBefore(DateTime.now()) ? -taskEnd.difference(DateTime.now()) : taskEnd.difference(DateTime.now()) + Duration(days: 1);
+    String progress = taskEnd.isBefore(DateTime.now()) ? 'opóźnienie ' : 'pozostało ';
+    Widget tags;
+
+    String tagsList = "";
+
+    for (int i = 0; i < projects[_selectedProject]['tasks'][_selectedTask]['tags'].length; i++) {
+      tagsList += projects[_selectedProject]['tasks'][_selectedTask]['tags'][i] + ' ';
+    }
+
+    List<Widget> detailsList = [
+      Text('opis', style: TextStyle(fontSize: 18)),
+      Container(
+        color: Colors.white,
+        child: Text(projects[_selectedProject]['tasks'][_selectedTask]['description']),
+      ),
+      Text('postęp', style: TextStyle(fontSize: 18)),
+      Container(
+        color: Colors.white,
+        child: Text('$progress ${daysLeft.inDays} dni'),
+      ),
+      Text('tagi', style: TextStyle(fontSize: 18)),
+    ];
+    tags = Container(
+      color: Colors.white,
+      child: Text(tagsList),
+    );
+
+    detailsList.add(tags);
+
+    return detailsList;
+  }
 
   List<Widget> _getTasks() {
     List<Widget> tasksList = [];
@@ -149,6 +191,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         onPressed: () {
           //_showDetails(); //nie wiem, w jakis sposob aktualizowac
+          setState(() {
+            _selectedTask = i;
+          });
         },
         child: Text(projects[_selectedProject]['tasks'][i]['taskTitle']),
       ));
@@ -172,9 +217,9 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.all(20.0),
         ),
         onPressed: () {
-          //_showTasks(); //nie wiem, w jakis sposob aktualizowac
           setState(() {
             _selectedProject = i;
+            _selectedTask = 0;
           });
         },
         child: Text(projects[i]['projectTitle']),
@@ -255,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Text(
                     'szczegóły',
                     style: TextStyle(
@@ -263,7 +308,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                )
+                ),
+                Expanded(
+                  child: ListView(
+                    children: _getDetails(),
+                  )),
               ],
             ),
           ),
