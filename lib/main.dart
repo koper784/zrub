@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(MyApp());
@@ -45,13 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
           'end': DateTime(2021, 4, 15),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
-          'isDone': false,
-          'tags': [
-            '#work',
-            '#a',
-            '#it',
-            '#pipipupu'
-          ]
+          'isDone': true,
+          'tags': ['#work', '#a', '#it', '#pipipupu']
         },
         {
           'taskTitle': 'A zadanie 2',
@@ -109,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'end': DateTime(2021, 1, 7),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
-          'isDone': false,
+          'isDone': true,
           'tags': [
             '#stop',
             '#a',
@@ -125,9 +121,10 @@ class _MyHomePageState extends State<MyHomePage> {
       'tasks': [
         {
           'taskTitle': 'PP zadanie 1',
-          'description': 'to jest pierwsze zadanie projektu PP',
+          'description':
+              'to jest pierwsze zadanie projektu PP jest to przykładowy opis test więcej niż jednej linijki',
           'begin': DateTime(2021, 1, 1),
-          'end': DateTime(2021, 1, 3),
+          'end': DateTime(2021, 7, 3),
           'daysLeft':
               0, //ZROB JAKAS FUNKCJE ZEBY TO OBLICZAC I POKAZYWAC ILE DO KONCA ALBO ILE SPOZNIENIA
           'isDone': false,
@@ -141,32 +138,58 @@ class _MyHomePageState extends State<MyHomePage> {
     },
   ];
 
+  double _getProgress() {
+    double value;
+    int howManyDone = 0;
+
+    for (int i = 0; i < projects[_selectedProject]['tasks'].length; i++) {
+      if (projects[_selectedProject]['tasks'][i]['isDone']) {
+        howManyDone++;
+      }
+    }
+
+    value = howManyDone / projects[_selectedProject]['tasks'].length;
+
+    return value;
+  }
+
   List<Widget> _getDetails() {
-    DateTime taskEnd = projects[_selectedProject]['tasks'][_selectedTask]['end'];
-    Duration daysLeft = taskEnd.isBefore(DateTime.now()) ? -taskEnd.difference(DateTime.now()) : taskEnd.difference(DateTime.now()) + Duration(days: 1);
-    String progress = taskEnd.isBefore(DateTime.now()) ? 'opóźnienie ' : 'pozostało ';
+    DateTime taskEnd =
+        projects[_selectedProject]['tasks'][_selectedTask]['end'];
+    Duration daysLeft = taskEnd.isBefore(DateTime.now())
+        ? -taskEnd.difference(DateTime.now())
+        : taskEnd.difference(DateTime.now()) + Duration(days: 1);
+    String progress =
+        taskEnd.isBefore(DateTime.now()) ? 'opóźnienie ' : 'pozostało ';
     Widget tags;
 
     String tagsList = "";
 
-    for (int i = 0; i < projects[_selectedProject]['tasks'][_selectedTask]['tags'].length; i++) {
-      tagsList += projects[_selectedProject]['tasks'][_selectedTask]['tags'][i] + ' ';
+    for (int i = 0;
+        i < projects[_selectedProject]['tasks'][_selectedTask]['tags'].length;
+        i++) {
+      tagsList +=
+          projects[_selectedProject]['tasks'][_selectedTask]['tags'][i] + ' ';
     }
 
     List<Widget> detailsList = [
       Text('opis', style: TextStyle(fontSize: 18)),
       Container(
+        padding: const EdgeInsets.all(3.0),
         color: Colors.white,
-        child: Text(projects[_selectedProject]['tasks'][_selectedTask]['description']),
+        child: Text(
+            projects[_selectedProject]['tasks'][_selectedTask]['description']),
       ),
       Text('postęp', style: TextStyle(fontSize: 18)),
       Container(
+        padding: const EdgeInsets.all(3.0),
         color: Colors.white,
         child: Text('$progress ${daysLeft.inDays} dni'),
       ),
       Text('tagi', style: TextStyle(fontSize: 18)),
     ];
     tags = Container(
+      padding: const EdgeInsets.all(3.0),
       color: Colors.white,
       child: Text(tagsList),
     );
@@ -182,10 +205,11 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < projects[_selectedProject]['tasks'].length; i++) {
       tasksList.add(OutlinedButton(
         style: OutlinedButton.styleFrom(
-          primary: Colors.white,
-          backgroundColor: Colors.blue,
+          primary: projects[_selectedProject]['tasks'][i]['isDone'] ? Colors.yellowAccent : Colors.white,
+          backgroundColor:
+              _selectedTask == i ? Colors.blue.shade900 : Colors.blue,
           textStyle: TextStyle(
-            fontSize: 18,
+            fontSize: _selectedTask == i ? 20 : 18,
           ),
           padding: const EdgeInsets.all(20.0),
         ),
@@ -197,7 +221,10 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         child: Text(projects[_selectedProject]['tasks'][i]['taskTitle']),
       ));
-      tasksList.add(Padding(padding: const EdgeInsets.symmetric(vertical: 3.0))); //moze szybsze by bylo opakowanie przycisku w container
+      tasksList.add(Padding(
+          padding: const EdgeInsets.symmetric(
+              vertical:
+                  3.0))); //moze szybsze by bylo opakowanie przycisku w container
     }
 
     return tasksList;
@@ -210,9 +237,10 @@ class _MyHomePageState extends State<MyHomePage> {
       projectsList.add(OutlinedButton(
         style: OutlinedButton.styleFrom(
           primary: Colors.white,
-          backgroundColor: Colors.blue,
+          backgroundColor:
+              _selectedProject == i ? Colors.blue.shade900 : Colors.blue,
           textStyle: TextStyle(
-            fontSize: 18,
+            fontSize: _selectedProject == i ? 20 : 18,
           ),
           padding: const EdgeInsets.all(20.0),
         ),
@@ -224,7 +252,10 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         child: Text(projects[i]['projectTitle']),
       ));
-      projectsList.add(Padding(padding: const EdgeInsets.symmetric(vertical: 3.0))); //moze szybsze by bylo opakowanie przycisku w container
+      projectsList.add(Padding(
+          padding: const EdgeInsets.symmetric(
+              vertical:
+                  3.0))); //moze szybsze by bylo opakowanie przycisku w container
     }
     return projectsList;
   }
@@ -310,25 +341,72 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 Expanded(
-                  child: ListView(
-                    children: _getDetails(),
-                  )),
+                    child: ListView(
+                  children: _getDetails(),
+                )),
               ],
             ),
           ),
-          Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  'opcje projektu',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+          ),
+          Container(
+            width: 250.0,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            color: Color(0xffc9c9c9),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    'opcje projektu',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              )
-            ],
+                Padding(padding: const EdgeInsets.all(5.0),),
+                OutlinedButton(
+                  onPressed: () {},
+                  child: Text('Usuń'),
+                    style: OutlinedButton.styleFrom(
+                    primary: Colors.white,
+                    backgroundColor: Colors.grey.shade600,
+                  ),
+                ),
+                Padding(padding: const EdgeInsets.all(3.0),),
+                OutlinedButton(
+                  onPressed: () {},
+                  child: Text('Zawieś'),
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.white,
+                    backgroundColor: Colors.grey.shade600,
+                  ),
+                ),
+                Padding(padding: const EdgeInsets.all(3.0),),
+                OutlinedButton(
+                  onPressed: () {},
+                  child: Text('Zakończ'),
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.white,
+                    backgroundColor: Colors.grey.shade600,
+                  ),
+                ),
+                Padding(padding: const EdgeInsets.all(8.0),),
+                Text('Postęp', style: TextStyle(fontSize: 18),),
+                LinearProgressIndicator(
+                  value: _getProgress(),
+                  minHeight: 10.0,
+                ),
+                Padding(padding: const EdgeInsets.all(8.0),),
+                Text('Deadline', style: TextStyle(fontSize: 18)),
+                Text(DateFormat.yMMMMd('en_US').format(projects[_selectedProject]['deadline'])),
+                Padding(padding: const EdgeInsets.all(8.0),),
+                Text('Tagi', style: TextStyle(fontSize: 18)),
+
+              ],
+            ),
           ),
           Column(
             children: <Widget>[

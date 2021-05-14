@@ -20,6 +20,7 @@
 
 # Visual Studio Code related
 .vscode/
+.vs/
 
 # Flutter/Dart/Pub related
 **/doc/api/
