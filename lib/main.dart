@@ -153,6 +153,26 @@ class _MyHomePageState extends State<MyHomePage> {
     return value;
   }
 
+  String _getAllTags() {
+    String tags = "";
+    List<String> tagsList = [];
+
+    for (int i = 0; i < projects[_selectedProject]['tasks'].length; i++) {
+      for (int j = 0;
+          j < projects[_selectedProject]['tasks'][i]['tags'].length;
+          j++) {
+        tagsList.add(projects[_selectedProject]['tasks'][i]['tags'][j]);
+      }
+    }
+    tagsList = tagsList.toSet().toList();
+
+    for (int i = 0; i < tagsList.length; i++) {
+      tags += tagsList[i] + ' ';
+    }
+
+    return tags;
+  }
+
   List<Widget> _getDetails() {
     DateTime taskEnd =
         projects[_selectedProject]['tasks'][_selectedTask]['end'];
@@ -205,7 +225,9 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < projects[_selectedProject]['tasks'].length; i++) {
       tasksList.add(OutlinedButton(
         style: OutlinedButton.styleFrom(
-          primary: projects[_selectedProject]['tasks'][i]['isDone'] ? Colors.yellowAccent : Colors.white,
+          primary: projects[_selectedProject]['tasks'][i]['isDone']
+              ? Colors.yellowAccent
+              : Colors.white,
           backgroundColor:
               _selectedTask == i ? Colors.blue.shade900 : Colors.blue,
           textStyle: TextStyle(
@@ -267,7 +289,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Row(
-        //mainAxisAlignment: MainAxisAlignment.spaceAround,
+        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Container(
             width: 250.0,
@@ -291,6 +313,24 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: _getProjects(),
                   ),
                 ),
+                Container(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FloatingActionButton(
+                          onPressed: () {},
+                          child: const Icon(Icons.add_box),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(2.0),
+                        ),
+                        FloatingActionButton(
+                          onPressed: () {},
+                          child: const Icon(Icons.delete),
+                        )
+                      ],
+                    ))
               ],
             ),
           ),
@@ -317,7 +357,25 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: ListView(
                       //padding: const EdgeInsets.all(10.0),
                       children: _getTasks()),
-                )
+                ),
+                Container(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FloatingActionButton(
+                          onPressed: () {},
+                          child: const Icon(Icons.add_box),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(2.0),
+                        ),
+                        FloatingActionButton(
+                          onPressed: () {},
+                          child: const Icon(Icons.delete),
+                        )
+                      ],
+                    ))
               ],
             ),
           ),
@@ -344,11 +402,22 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: ListView(
                   children: _getDetails(),
                 )),
+                Container(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FloatingActionButton(
+                            onPressed: () {}, child: const Icon(Icons.edit)),
+                      ],
+                    ))
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(0.0),
+            ),
           ),
           Container(
             width: 250.0,
@@ -366,16 +435,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
-                Padding(padding: const EdgeInsets.all(5.0),),
-                OutlinedButton(
-                  onPressed: () {},
-                  child: Text('Usuń'),
-                    style: OutlinedButton.styleFrom(
-                    primary: Colors.white,
-                    backgroundColor: Colors.grey.shade600,
-                  ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
                 ),
-                Padding(padding: const EdgeInsets.all(3.0),),
                 OutlinedButton(
                   onPressed: () {},
                   child: Text('Zawieś'),
@@ -384,7 +446,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     backgroundColor: Colors.grey.shade600,
                   ),
                 ),
-                Padding(padding: const EdgeInsets.all(3.0),),
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                ),
                 OutlinedButton(
                   onPressed: () {},
                   child: Text('Zakończ'),
@@ -393,34 +457,115 @@ class _MyHomePageState extends State<MyHomePage> {
                     backgroundColor: Colors.grey.shade600,
                   ),
                 ),
-                Padding(padding: const EdgeInsets.all(8.0),),
-                Text('Postęp', style: TextStyle(fontSize: 18),),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    'opcje zadania',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                ),
+                OutlinedButton(
+                  onPressed: () {},
+                  child: Text('Zawieś'),
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.white,
+                    backgroundColor: Colors.grey.shade600,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                ),
+                OutlinedButton(
+                  onPressed: () {},
+                  child: Text('Zakończ'),
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.white,
+                    backgroundColor: Colors.grey.shade600,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    'o projekcie',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  'Postęp',
+                  style: TextStyle(fontSize: 18),
+                ),
                 LinearProgressIndicator(
                   value: _getProgress(),
                   minHeight: 10.0,
                 ),
-                Padding(padding: const EdgeInsets.all(8.0),),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                ),
                 Text('Deadline', style: TextStyle(fontSize: 18)),
-                Text(DateFormat.yMMMMd('en_US').format(projects[_selectedProject]['deadline'])),
-                Padding(padding: const EdgeInsets.all(8.0),),
+                Text(DateFormat.yMMMMd('en_US')
+                    .format(projects[_selectedProject]['deadline'])),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                ),
                 Text('Tagi', style: TextStyle(fontSize: 18)),
-
+                Text(_getAllTags()),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                ),
               ],
             ),
           ),
-          Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  'narzędzia',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+          Container(
+            width: 250.0,
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    'narzędzia',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              )
-            ],
+                Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Enter a search term'),
+                    )),
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                ),
+                ElevatedButton(onPressed: () {}, child: Text('Szukaj')),
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                ),
+                ElevatedButton(
+                    onPressed: () {}, child: Text('Sortuj projekty')),
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                ),
+                ElevatedButton(onPressed: () {}, child: Text('Sortuj zadania')),
+              ],
+            ),
           ),
         ],
       ),
