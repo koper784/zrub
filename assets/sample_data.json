@@ -1,0 +1,67 @@
+[
+    {
+        "projTitle": "Robienie obiadu",
+        "projDeadline": "2021-07-01T00:00:00.000000Z",
+        "projProgress": 0.0,
+        "projDesc": "Kroki potrzebne do wykonania schabowego z mizerią.",
+        "projIsDone": false,
+        "projTasks": [
+            {
+                "taskTitle": "Robienie zakupów",
+                "taskDesc": "Ziemniaki, schabowy, ogórki, śmietana, bułka tarta",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#zakupy",
+                    "#lidl",
+                    "#jedzenie"
+                ]
+            },
+            {
+                "taskTitle": "Obieranie ziemniaków",
+                "taskDesc": "Nożem, bo obieraczki nie ma",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#bieda",
+                    "#suicidal"
+                ]
+            },
+            {
+                "taskTitle": "Jedzenie",
+                "taskDesc": "Zjem surowe ziemniaki bo mi się odechciało",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#bieda",
+                    "#yummy"
+                ]
+            }
+        ]
+    },
+    {
+        "projTitle": "Metamorfoza ogrodu",
+        "projDeadline": "2021-21-01T00:00:00.000000Z",
+        "projProgress": 0.0,
+        "projDesc": "Odnowienie ogrodu to jedyne dlaczego wstaję rano",
+        "projIsDone": false,
+        "projTasks": [
+            {
+                "taskTitle": "Koszenie trawy",
+                "taskDesc": "Koszenie trawy najpierw, wyniesienie jej do kompostownika, podjedzenie trochę",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#kosiara",
+                    "#weganizm"
+                ]
+            },
+            {
+                "taskTitle": "Odtrąbienie sukcesu",
+                "taskDesc": "Straciłem ochotę już na etapie planowania",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#success",
+                    "#suffering",
+                    "#life"
+                ]
+            }
+        ]
+    }
+]
