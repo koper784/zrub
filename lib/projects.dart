@@ -2,7 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:zrub/classes.dart';
+import 'package:zrub/tasks.dart' as taskPage;
 import 'dart:convert';
+
+int getSelectedProject() {
+  return _MyProjectsPageState.selectedProject;
+}
+
+void setSelectedProject(int n) {
+  _MyProjectsPageState.selectedProject = n;
+}
+
+Future<List<Project>> getProjectAsset() async {
+  return await _MyProjectsPageState.loadProjects();
+}
 
 class MyProjectsPage extends StatefulWidget {
   @override
@@ -10,15 +23,15 @@ class MyProjectsPage extends StatefulWidget {
 }
 
 class _MyProjectsPageState extends State<MyProjectsPage> {
-  int _selectedProject = 0;
-  int _selectedTask = 0;
+  static int selectedProject = 0;
+
   bool _displayDone = false;
 
-  Future<String> _loadProjectAsset() async {
+  static Future<String> _loadProjectAsset() async {
     return await rootBundle.loadString('assets/sample_data.json');
   }
 
-  Future<List<Project>> _loadProjects() async {
+  static Future<List<Project>> loadProjects() async {
     //await wait(5);
     List<Project> projects = [];
 
@@ -30,9 +43,15 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
     return projects;
   }
 
-  List<Widget> _getProjectsWidgets(
-      bool done, AsyncSnapshot<List<Project>> snap) {
-    List<Project> projects = snap.data ?? [];
+  Widget _endProjButton(Project proj) {
+    return ElevatedButton(
+        onPressed: () {},
+        child: Text(
+          proj.projIsDone == true ? 'Wznów projekt' : 'Zakończ projekt',
+        ));
+  }
+
+  List<Widget> _getProjectsWidgets(bool done, List<Project> projects) {
     List<Widget> projectsWidgets = [];
 
     for (int i = 0; i < projects.length; i++) {
@@ -42,16 +61,16 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
             style: OutlinedButton.styleFrom(
               primary: Colors.white,
               backgroundColor:
-                  _selectedProject == i ? Colors.blue.shade900 : Colors.blue,
+                  selectedProject == i ? Colors.blue.shade900 : Colors.blue,
               textStyle: TextStyle(
-                fontSize: _selectedProject == i ? 20 : 17,
+                fontSize: selectedProject == i ? 20 : 17,
               ),
               padding: const EdgeInsets.all(20.0),
             ),
             onPressed: () {
               setState(() {
-                _selectedProject = i;
-                _selectedTask = 0; //zrob settera w tasku
+                selectedProject = i;
+                taskPage.setSelectedTask(0);
               });
             },
             child: Text(projects[i].projTitle),
@@ -76,7 +95,65 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
     });
   }
 
-  //jeszcze get all tags jako przyciski??
+  List<Widget> _getProjInfo(bool done, Project proj) {
+    return [
+      Text(
+        proj.projTitle,
+        style: TextStyle(
+          fontSize: 30,
+        ),
+      ),
+      Padding(padding: const EdgeInsets.all(10.0)),
+      Text('Opis',
+          style: TextStyle(
+            fontSize: 24,
+          )),
+      Padding(padding: const EdgeInsets.all(4.0)),
+      Text(proj.projDesc,
+          style: TextStyle(
+            fontSize: 20,
+          )),
+      Padding(padding: const EdgeInsets.all(10.0)),
+      Text('Postęp',
+          style: TextStyle(
+            fontSize: 24,
+          )),
+      Padding(padding: const EdgeInsets.all(4.0)),
+      LinearProgressIndicator(
+        value: proj.projProgress,
+        minHeight: 20.0,
+      ),
+      Padding(padding: const EdgeInsets.all(10.0)),
+      Text('Tagi',
+          style: TextStyle(
+            fontSize: 24,
+          )),
+      Padding(padding: const EdgeInsets.all(4.0)),
+      Text(_getProjTags(proj),
+          style: TextStyle(
+            fontSize: 20,
+          ))
+    ];
+  }
+
+  String _getProjTags(Project proj) {
+    List<String> tempTags = [];
+    String tags = '';
+
+    for (int i = 0; i < proj.projTasks.length; i++) {
+      for (int j = 0; j < proj.projTasks[i].taskTags.length; j++) {
+        tempTags.add(proj.projTasks[i].taskTags[j]);
+      }
+    }
+
+    tempTags = tempTags.toSet().toList();
+
+    for (int i = 0; i < tempTags.length; i++) {
+      tags += tempTags[i] + ' ';
+    }
+
+    return tags;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,44 +197,85 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                     ),
                     Padding(padding: const EdgeInsets.all(10.0)),
                     FutureBuilder(
-                      future: _loadProjects(),
+                      future: loadProjects(),
                       builder:
                           (context, AsyncSnapshot<List<Project>> snapshot) {
+                        List<Project> projects = snapshot.data ?? [];
                         if (snapshot.hasData) {
                           return Expanded(
                               child: ListView(
                                   children: _getProjectsWidgets(
-                                      _displayDone, snapshot)));
+                                      _displayDone, projects)));
                         } else if (snapshot.hasError) {
                           return Text("${snapshot.error}");
                         }
                         return CircularProgressIndicator();
                       },
                     ),
-                    /*Expanded(
-                      child: ListView(
-                        //padding: const EdgeInsets.all(10.0),
-                        children: _getProjects(),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: FutureBuilder(
+                  future: loadProjects(),
+                  builder: (context, AsyncSnapshot<List<Project>> snapshot) {
+                    List<Project> projects = snapshot.data ?? [];
+                    if (snapshot.hasData) {
+                      return Container(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListView(
+                              children: _getProjInfo(
+                                  _displayDone, projects[selectedProject])));
+                    } else if (snapshot.hasError) {
+                      return Text("${snapshot.error}");
+                    }
+                    return CircularProgressIndicator();
+                  },
+                ),
+              ),
+              Container(
+                width: 250.0,
+                color: Color(0xffc9c9c9),
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        'narzędzia',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),*/
-                    Container(
+                    ),
+                    Padding(
                         padding: const EdgeInsets.all(5.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FloatingActionButton(
-                              onPressed: () {},
-                              child: const Icon(Icons.add_box),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(2.0),
-                            ),
-                            FloatingActionButton(
-                              onPressed: () {},
-                              child: const Icon(Icons.delete),
-                            )
-                          ],
-                        ))
+                        child: TextField(
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: 'Wpisz tagi'),
+                        )),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                    ),
+                    ElevatedButton(onPressed: () {}, child: Text('Szukaj')),
+                    Padding(
+                      padding: const EdgeInsets.all(15.0),
+                    ),
+                    ElevatedButton(
+                        onPressed: () {}, child: Text('Dodaj projekt')),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                    ),
+                    ElevatedButton(
+                        onPressed: () {}, child: Text('Usuń projekt')),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                    ),
+                    ElevatedButton(
+                        onPressed: () {}, child: Text('Idź do zadań')),
+                    //_endProjButton() TU MUSI BYC FUTURE BUILDER w calej kolumnie
                   ],
                 ),
               ),

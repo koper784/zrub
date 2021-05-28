@@ -63,5 +63,44 @@
                 ]
             }
         ]
+    },
+    {
+        "projTitle": "Pisanie aplikacji we flutterze",
+        "projDeadline": "2021-08-01T00:00:00.000000Z",
+        "projProgress": 0.1,
+        "projDesc": "Aplikacja pod tytułem, nie wiem jak to zrobić ale mam już kroki jak to zrobić.",
+        "projIsDone": true,
+        "projTasks": [
+            {
+                "taskTitle": "Nauka technologii",
+                "taskDesc": "Mam udawać, że coś robię",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#nauka",
+                    "#programming",
+                    "#hajs",
+                    "#programista15k"
+                ]
+            },
+            {
+                "taskTitle": "Kopiowanie kodu z internetu",
+                "taskDesc": "Samemu nie umiem",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#niewiedza",
+                    "#poddaniesie"
+                ]
+            },
+            {
+                "taskTitle": "Płacz",
+                "taskDesc": "Nic nie będzie działać",
+                "taskIsDone": false,
+                "taskTags": [
+                    "#zalesie",
+                    "#koniec",
+                    "#hasztag"
+                ]
+            }
+        ]
     }
 ]

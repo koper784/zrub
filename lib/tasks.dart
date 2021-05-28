@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:zrub/projects.dart' as projPage;
 import 'package:intl/intl.dart';
+import 'classes.dart';
+
+int getSelectedTask() {
+  return _MyTasksPageState.selectedTask;
+}
+
+void setSelectedTask(int n) {
+  _MyTasksPageState.selectedTask = n;
+}
 
 class MyTasksPage extends StatefulWidget {
   @override
@@ -7,6 +17,21 @@ class MyTasksPage extends StatefulWidget {
 }
 
 class _MyTasksPageState extends State<MyTasksPage> {
+  static int selectedTask = 0;
+  bool _displayDone = false;
+
+  void _displayCurrentTasks() {
+    setState(() {
+      _displayDone = false;
+    });
+  }
+
+  void _displayDoneTasks() {
+    setState(() {
+      _displayDone = true;
+    });
+  }
+
   List<Widget> _getTasks() {
     List<Widget> tasksList = [];
 
@@ -19,8 +44,86 @@ class _MyTasksPageState extends State<MyTasksPage> {
     return detailsList;
   }
 
-  double _getProgress() {
-    return 0.0;
+  List<Widget> _getTasksWidgets(bool done, List<Task> tasks) {
+    List<Widget> tasksWidgets = [];
+
+    for (int i = 0; i < tasks.length; i++) {
+      if (tasks[i].taskIsDone == done) {
+        tasksWidgets.add(
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              primary: Colors.white,
+              backgroundColor:
+                  selectedTask == i ? Colors.blue.shade900 : Colors.blue,
+              textStyle: TextStyle(
+                fontSize: selectedTask == i ? 20 : 17,
+              ),
+              padding: const EdgeInsets.all(20.0),
+            ),
+            onPressed: () {
+              setState(() {
+                selectedTask = i;
+              });
+            },
+            child: Text(tasks[i].taskTitle),
+          ),
+        );
+        tasksWidgets
+            .add(Padding(padding: const EdgeInsets.symmetric(vertical: 3.0)));
+      }
+    }
+
+    return tasksWidgets;
+  }
+
+  List<Widget> _getTaskInfo(bool done, Task task) {
+    return [
+      Text(
+        task.taskTitle,
+        style: TextStyle(
+          fontSize: 30,
+        ),
+      ),
+      Padding(padding: const EdgeInsets.all(10.0)),
+      Text('Opis',
+          style: TextStyle(
+            fontSize: 24,
+          )),
+      Padding(padding: const EdgeInsets.all(4.0)),
+      Text(task.taskDesc,
+          style: TextStyle(
+            fontSize: 20,
+          )),
+      Padding(padding: const EdgeInsets.all(10.0)),
+      Text('Postęp',
+          style: TextStyle(
+            fontSize: 24,
+          )),
+      Padding(padding: const EdgeInsets.all(4.0)),
+      // LinearProgressIndicator(
+      //   value: task.taskProgress,
+      //   minHeight: 20.0,
+      // ),
+      Padding(padding: const EdgeInsets.all(10.0)),
+      Text('Tagi',
+          style: TextStyle(
+            fontSize: 24,
+          )),
+      Padding(padding: const EdgeInsets.all(4.0)),
+      Text(_getTaskTags(task),
+          style: TextStyle(
+            fontSize: 20,
+          ))
+    ];
+  }
+
+  String _getTaskTags(Task task) {
+    String tags = '';
+
+    for (int i = 0; i < task.taskTags.length; i++) {
+      tags += task.taskTags[i] + ' ';
+    }
+    return tags;
   }
 
   @override
@@ -48,186 +151,67 @@ class _MyTasksPageState extends State<MyTasksPage> {
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: ListView(
-                          //padding: const EdgeInsets.all(10.0),
-                          children: _getTasks()),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                            onPressed: () {
+                              _displayCurrentTasks();
+                            },
+                            child: Text('Aktualne')),
+                        ElevatedButton(
+                            onPressed: () {
+                              _displayDoneTasks();
+                            },
+                            child: Text('Zakończone')),
+                      ],
                     ),
-                    Container(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FloatingActionButton(
-                              onPressed: () {},
-                              child: const Icon(Icons.add_box),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(2.0),
-                            ),
-                            FloatingActionButton(
-                              onPressed: () {},
-                              child: const Icon(Icons.delete),
-                            )
-                          ],
-                        ))
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-              ),
-              Container(
-                width: 250.0,
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                color: Color(0xff83b0f7),
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        'szczegóły',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    Padding(padding: const EdgeInsets.all(10.0)),
+                    FutureBuilder(
+                      future: projPage.getProjectAsset(),
+                      builder:
+                          (context, AsyncSnapshot<List<Project>> snapshot) {
+                        List<Project> projects = snapshot.data ?? [];
+                        if (snapshot.hasData) {
+                          return Expanded(
+                              child: ListView(
+                                  children: _getTasksWidgets(
+                                      _displayDone,
+                                      projects[projPage.getSelectedProject()]
+                                          .projTasks)));
+                        } else if (snapshot.hasError) {
+                          return Text("${snapshot.error}");
+                        }
+                        return CircularProgressIndicator();
+                      },
                     ),
-                    Expanded(
-                        child: ListView(
-                      children: _getDetails(),
-                    )),
-                    Container(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FloatingActionButton(
-                                onPressed: () {},
-                                child: const Icon(Icons.edit)),
-                          ],
-                        ))
                   ],
                 ),
               ),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(0.0),
+                child: FutureBuilder(
+                  future: projPage.getProjectAsset(),
+                  builder: (context, AsyncSnapshot<List<Project>> snapshot) {
+                    List<Project> projects = snapshot.data ?? [];
+                    if (snapshot.hasData) {
+                      return Container(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListView(
+                              children: _getTaskInfo(
+                                  _displayDone,
+                                  projects[projPage.getSelectedProject()]
+                                      .projTasks[selectedTask])));
+                    } else if (snapshot.hasError) {
+                      return Text("${snapshot.error}");
+                    }
+                    return CircularProgressIndicator();
+                  },
                 ),
               ),
               Container(
                 width: 250.0,
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 color: Color(0xffc9c9c9),
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        'opcje projektu',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {},
-                      child: Text('Zawieś'),
-                      style: OutlinedButton.styleFrom(
-                        primary: Colors.white,
-                        backgroundColor: Colors.grey.shade600,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {},
-                      child: Text('Zakończ'),
-                      style: OutlinedButton.styleFrom(
-                        primary: Colors.white,
-                        backgroundColor: Colors.grey.shade600,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        'opcje zadania',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {},
-                      child: Text('Zawieś'),
-                      style: OutlinedButton.styleFrom(
-                        primary: Colors.white,
-                        backgroundColor: Colors.grey.shade600,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {},
-                      child: Text('Zakończ'),
-                      style: OutlinedButton.styleFrom(
-                        primary: Colors.white,
-                        backgroundColor: Colors.grey.shade600,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        'o projekcie',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Postęp',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    LinearProgressIndicator(
-                      value: _getProgress(),
-                      minHeight: 10.0,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                    ),
-                    Text('Deadline', style: TextStyle(fontSize: 18)),
-                    /*Text(DateFormat.yMMMMd('en_US')
-                        .format(projects[_selectedProject]['projDeadline'])),*/
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                    ),
-                    Text('Tagi', style: TextStyle(fontSize: 18)),
-                    //Text(_getAllTags()),
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 250.0,
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Column(
                   children: <Widget>[
                     Padding(
@@ -245,7 +229,7 @@ class _MyTasksPageState extends State<MyTasksPage> {
                         child: TextField(
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),
-                              hintText: 'Wpisz kluczowe hasło'),
+                              hintText: 'Wpisz tagi'),
                         )),
                     Padding(
                       padding: const EdgeInsets.all(3.0),
@@ -255,12 +239,16 @@ class _MyTasksPageState extends State<MyTasksPage> {
                       padding: const EdgeInsets.all(15.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Sortuj projekty')),
+                        onPressed: () {}, child: Text('Dodaj zadanie')),
                     Padding(
                       padding: const EdgeInsets.all(3.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Sortuj zadania')),
+                        onPressed: () {}, child: Text('Usuń zadanie')),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                    ),
+                    //_endTaskButton() TU MUSI BYC FUTURE BUILDER w calej kolumnie
                   ],
                 ),
               ),

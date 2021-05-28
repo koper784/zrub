@@ -12,7 +12,6 @@ class Task {
       required this.taskIsDone,
       required this.taskTags});
 
-  //bycmoze niepotrzebne
   factory Task.fromJson(Map<String, dynamic> parsedJson) {
     return Task(
         taskTitle: parsedJson['taskTitle'],
