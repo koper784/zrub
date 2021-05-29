@@ -50,7 +50,7 @@
                 "taskTitle": "Koszenie trawy",
                 "taskProgress": 0.0,
                 "taskDesc": "Koszenie trawy najpierw, wyniesienie jej do kompostownika, podjedzenie trochę",
-                "taskIsDone": false,
+                "taskIsDone": true,
                 "taskTags": [
                     "#kosiara",
                     "#weganizm"

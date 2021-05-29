@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:zrub/classes.dart';
 import 'package:zrub/tasks.dart' as taskPage;
 import 'dart:convert';
+import 'edit_project.dart' as editProjPage;
+import 'add_project.dart';
 
 int getSelectedProject() {
   return _MyProjectsPageState.selectedProject;
@@ -22,6 +24,14 @@ class MyProjectsPage extends StatefulWidget {
 }
 
 class _MyProjectsPageState extends State<MyProjectsPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  List<Project> projects = [];
+  //List<Project> projectsToSave = [];
+
   static int selectedProject = 0;
 
   bool _displayDone = false;
@@ -35,7 +45,7 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
   }
 
   static Future<List<Project>> loadProjects() async {
-    await wait(1);
+    //await wait(1);
     List<Project> projects = [];
 
     String jsonString = await _loadProjectAsset();
@@ -187,11 +197,21 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: _displayDone == false
+                                  ? Colors.grey.shade800
+                                  : Colors.grey,
+                            ),
                             onPressed: () {
                               _displayCurrentProjects();
                             },
                             child: Text('Aktualne')),
                         ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: _displayDone == true
+                                  ? Colors.grey.shade800
+                                  : Colors.grey,
+                            ),
                             onPressed: () {
                               _displayDoneProjects();
                             },
@@ -203,7 +223,8 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                         future: loadProjects(),
                         builder:
                             (context, AsyncSnapshot<List<Project>> snapshot) {
-                          List<Project> projects = snapshot.data ?? [];
+                          projects = snapshot.data ?? [];
+                          //projectsToSave = projects;
                           if (snapshot.hasData) {
                             return Expanded(
                                 child: ListView(
@@ -221,7 +242,7 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                 child: FutureBuilder(
                   future: loadProjects(),
                   builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-                    List<Project> projects = snapshot.data ?? [];
+                    projects = snapshot.data ?? [];
                     if (snapshot.hasData) {
                       return Container(
                           padding: const EdgeInsets.all(8.0),
@@ -268,14 +289,32 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                       padding: const EdgeInsets.all(15.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Dodaj projekt')),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MyAddProjPage()));
+                        },
+                        child: Text('Dodaj projekt')),
                     Padding(
                       padding: const EdgeInsets.all(3.0),
                     ),
                     ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      editProjPage.MyEditProjPage()));
+                        },
+                        child: Text('Edytuj projekt')),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                    ),
+                    ElevatedButton(
                         onPressed: () {}, child: Text('Usuń projekt')),
                     Padding(
-                      padding: const EdgeInsets.all(3.0),
+                      padding: const EdgeInsets.all(10.0),
                     ),
                     ElevatedButton(
                         onPressed: () {

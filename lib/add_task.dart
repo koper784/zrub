@@ -6,32 +6,23 @@ import 'package:zrub/tasks.dart' as taskPage;
 import 'classes.dart';
 import 'package:hashtagable/hashtagable.dart';
 
-class MyEditTaskPage extends StatefulWidget {
+class MyAddTaskPage extends StatefulWidget {
   @override
-  _MyEditTaskPageState createState() => _MyEditTaskPageState();
+  _MyAddTaskPageState createState() => _MyAddTaskPageState();
 }
 
-class _MyEditTaskPageState extends State<MyEditTaskPage> {
-  @override
-  void initState() {
-    getSelProjTitle();
-    super.initState();
-    //teoretycznie moge tutaj wszystko wczytywac zamiast robic future buildery
-  }
+class _MyAddTaskPageState extends State<MyAddTaskPage> {
+  Task task = Task(
+      taskDesc: 'Opis...',
+      taskIsDone: false,
+      taskProgress: 0.0,
+      taskTags: [],
+      taskTitle: 'Puste zadanie');
 
   int dropdownDay = 1;
   int dropdownMonth = 1;
   int dropdownYear = 2021;
   String editPageTitle = '';
-
-  void getSelProjTitle() async {
-    List<Project> projs = await projPage.getProjectAsset();
-    setState(() {
-      editPageTitle = projs[projPage.getSelectedProject()]
-          .projTasks[taskPage.getSelectedTask()]
-          .taskTitle;
-    });
-  }
 
   String _getTaskTags(Task task) {
     String tags = '';
@@ -44,7 +35,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
 
   final _formKey = GlobalKey<FormState>();
 
-  Widget loadForm(Project proj) {
+  Widget loadForm(Task task) {
     return Container(
       padding: const EdgeInsets.all(10.0),
       child: Form(
@@ -53,8 +44,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextFormField(
-                initialValue:
-                    proj.projTasks[taskPage.getSelectedTask()].taskTitle,
+                initialValue: task.taskTitle,
                 decoration: InputDecoration(
                   border: UnderlineInputBorder(),
                   labelText: 'Nazwa zadania',
@@ -67,8 +57,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
                 },
               ),
               TextFormField(
-                initialValue:
-                    proj.projTasks[taskPage.getSelectedTask()].taskDesc,
+                initialValue: task.taskDesc,
                 keyboardType: TextInputType.multiline,
                 minLines: 1,
                 maxLines: 10,
@@ -87,8 +76,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
                 },
               ),
               TextFormField(
-                initialValue:
-                    _getTaskTags(proj.projTasks[taskPage.getSelectedTask()]),
+                initialValue: _getTaskTags(task),
                 decoration: InputDecoration(
                   border: UnderlineInputBorder(),
                   labelText: 'Tagi',
@@ -125,19 +113,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
       appBar: AppBar(
         title: Text('Edytuj - $editPageTitle'),
       ),
-      body: FutureBuilder(
-        future: projPage.getProjectAsset(),
-        builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-          List<Project> projects = snapshot.data ?? [];
-          if (snapshot.hasData) {
-            return loadForm(projects[projPage.getSelectedProject()]);
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          } else {
-            return CircularProgressIndicator();
-          }
-        },
-      ),
+      body: loadForm(task),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'classes.dart';
+import 'edit_task.dart' as editTaskPage;
+import 'add_task.dart';
 
 int getSelectedTask() {
   return _MyTasksPageState.selectedTask;
@@ -157,11 +159,21 @@ class _MyTasksPageState extends State<MyTasksPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: _displayDone == false
+                                  ? Colors.grey.shade800
+                                  : Colors.grey,
+                            ),
                             onPressed: () {
                               _displayCurrentTasks();
                             },
                             child: Text('Aktualne')),
                         ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: _displayDone == true
+                                  ? Colors.grey.shade800
+                                  : Colors.grey,
+                            ),
                             onPressed: () {
                               _displayDoneTasks();
                             },
@@ -243,9 +255,27 @@ class _MyTasksPageState extends State<MyTasksPage> {
                       padding: const EdgeInsets.all(15.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Dodaj zadanie')),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MyAddTaskPage()));
+                        },
+                        child: Text('Dodaj zadanie')),
                     Padding(
                       padding: const EdgeInsets.all(3.0),
+                    ),
+                    ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      editTaskPage.MyEditTaskPage()));
+                        },
+                        child: Text('Edytuj zadanie')),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
                     ),
                     ElevatedButton(
                         onPressed: () {}, child: Text('Usuń zadanie')),

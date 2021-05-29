@@ -1,33 +1,25 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:zrub/projects.dart' as projPage;
 import 'classes.dart';
 
-class MyEditProjPage extends StatefulWidget {
+class MyAddProjPage extends StatefulWidget {
   @override
-  _MyEditProjPageState createState() => _MyEditProjPageState();
+  _MyAddProjPageState createState() => _MyAddProjPageState();
 }
 
-class _MyEditProjPageState extends State<MyEditProjPage> {
-  @override
-  void initState() {
-    getSelProjTitle();
-    super.initState();
-    //teoretycznie moge tutaj wszystko wczytywac zamiast robic future buildery
-  }
+class _MyAddProjPageState extends State<MyAddProjPage> {
+  Project proj = Project(
+      projDeadline: DateTime.now(),
+      projDesc: 'Opis...',
+      projIsDone: false,
+      projProgress: 0.0,
+      projTasks: [],
+      projTitle: 'Pusty projekt');
 
   int dropdownDay = 1;
   int dropdownMonth = 1;
   int dropdownYear = 2021;
-  String editPageTitle = '';
-
-  void getSelProjTitle() async {
-    List<Project> projs = await projPage.getProjectAsset();
-    setState(() {
-      editPageTitle = projs[projPage.getSelectedProject()].projTitle;
-    });
-  }
 
   final _formKey = GlobalKey<FormState>();
 
@@ -138,21 +130,9 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edytuj - $editPageTitle'),
+        title: Text('Dodaj projekt'),
       ),
-      body: FutureBuilder(
-        future: projPage.getProjectAsset(),
-        builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-          List<Project> projects = snapshot.data ?? [];
-          if (snapshot.hasData) {
-            return loadForm(projects[projPage.getSelectedProject()]);
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          } else {
-            return CircularProgressIndicator();
-          }
-        },
-      ),
+      body: loadForm(proj),
     );
   }
 }
