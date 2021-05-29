@@ -8,6 +8,7 @@
         "projTasks": [
             {
                 "taskTitle": "Robienie zakupów",
+                "taskProgress": 0.0,
                 "taskDesc": "Ziemniaki, schabowy, ogórki, śmietana, bułka tarta",
                 "taskIsDone": false,
                 "taskTags": [
@@ -18,6 +19,7 @@
             },
             {
                 "taskTitle": "Obieranie ziemniaków",
+                "taskProgress": 0.0,
                 "taskDesc": "Nożem, bo obieraczki nie ma",
                 "taskIsDone": false,
                 "taskTags": [
@@ -27,6 +29,7 @@
             },
             {
                 "taskTitle": "Jedzenie",
+                "taskProgress": 0.0,
                 "taskDesc": "Zjem surowe ziemniaki bo mi się odechciało",
                 "taskIsDone": false,
                 "taskTags": [
@@ -45,6 +48,7 @@
         "projTasks": [
             {
                 "taskTitle": "Koszenie trawy",
+                "taskProgress": 0.0,
                 "taskDesc": "Koszenie trawy najpierw, wyniesienie jej do kompostownika, podjedzenie trochę",
                 "taskIsDone": false,
                 "taskTags": [
@@ -54,6 +58,7 @@
             },
             {
                 "taskTitle": "Odtrąbienie sukcesu",
+                "taskProgress": 0.0,
                 "taskDesc": "Straciłem ochotę już na etapie planowania",
                 "taskIsDone": false,
                 "taskTags": [
@@ -73,6 +78,7 @@
         "projTasks": [
             {
                 "taskTitle": "Nauka technologii",
+                "taskProgress": 0.0,
                 "taskDesc": "Mam udawać, że coś robię",
                 "taskIsDone": false,
                 "taskTags": [
@@ -84,6 +90,7 @@
             },
             {
                 "taskTitle": "Kopiowanie kodu z internetu",
+                "taskProgress": 0.0,
                 "taskDesc": "Samemu nie umiem",
                 "taskIsDone": false,
                 "taskTags": [
@@ -93,6 +100,7 @@
             },
             {
                 "taskTitle": "Płacz",
+                "taskProgress": 0.0,
                 "taskDesc": "Nic nie będzie działać",
                 "taskIsDone": false,
                 "taskTags": [

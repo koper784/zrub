@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:zrub/projects.dart' as projPage;
-import 'package:intl/intl.dart';
 import 'classes.dart';
 
 int getSelectedTask() {
@@ -17,8 +16,23 @@ class MyTasksPage extends StatefulWidget {
 }
 
 class _MyTasksPageState extends State<MyTasksPage> {
+  @override
+  void initState() {
+    getSelProjTitle();
+    super.initState();
+    //teoretycznie moge tutaj wszystko wczytywac zamiast robic future buildery
+  }
+
   static int selectedTask = 0;
   bool _displayDone = false;
+  String selectedProjTitle = '';
+
+  void getSelProjTitle() async {
+    List<Project> projs = await projPage.getProjectAsset();
+    setState(() {
+      selectedProjTitle = projs[projPage.getSelectedProject()].projTitle;
+    });
+  }
 
   void _displayCurrentTasks() {
     setState(() {
@@ -30,18 +44,6 @@ class _MyTasksPageState extends State<MyTasksPage> {
     setState(() {
       _displayDone = true;
     });
-  }
-
-  List<Widget> _getTasks() {
-    List<Widget> tasksList = [];
-
-    return tasksList;
-  }
-
-  List<Widget> _getDetails() {
-    List<Widget> detailsList = [];
-
-    return detailsList;
   }
 
   List<Widget> _getTasksWidgets(bool done, List<Task> tasks) {
@@ -100,10 +102,10 @@ class _MyTasksPageState extends State<MyTasksPage> {
             fontSize: 24,
           )),
       Padding(padding: const EdgeInsets.all(4.0)),
-      // LinearProgressIndicator(
-      //   value: task.taskProgress,
-      //   minHeight: 20.0,
-      // ),
+      LinearProgressIndicator(
+        value: task.taskProgress,
+        minHeight: 20.0,
+      ),
       Padding(padding: const EdgeInsets.all(10.0)),
       Text('Tagi',
           style: TextStyle(
@@ -130,7 +132,7 @@ class _MyTasksPageState extends State<MyTasksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Lista zadań - Zrub'),
+          title: Text('Lista zadań - $selectedProjTitle'),
         ),
         body: Row(
             //mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -204,7 +206,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
                     }
-                    return CircularProgressIndicator();
+                    return Container(
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator());
                   },
                 ),
               ),

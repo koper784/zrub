@@ -1,22 +1,23 @@
-import 'dart:convert';
-
 class Task {
   String taskTitle;
   String taskDesc;
   bool taskIsDone;
   List<String> taskTags;
+  double taskProgress;
 
   Task(
       {required this.taskTitle,
       required this.taskDesc,
       required this.taskIsDone,
-      required this.taskTags});
+      required this.taskTags,
+      required this.taskProgress});
 
   factory Task.fromJson(Map<String, dynamic> parsedJson) {
     return Task(
         taskTitle: parsedJson['taskTitle'],
         taskDesc: parsedJson['taskDesc'],
         taskIsDone: parsedJson['taskIsDone'],
+        taskProgress: parsedJson['taskProgress'],
         taskTags: List<String>.from(parsedJson['taskTags']));
   }
 }

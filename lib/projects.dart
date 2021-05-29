@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:zrub/classes.dart';
 import 'package:zrub/tasks.dart' as taskPage;
 import 'dart:convert';
@@ -31,8 +30,12 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
     return await rootBundle.loadString('assets/sample_data.json');
   }
 
+  static Future wait(int seconds) {
+    return new Future.delayed(Duration(seconds: seconds), () => {});
+  }
+
   static Future<List<Project>> loadProjects() async {
-    //await wait(5);
+    await wait(1);
     List<Project> projects = [];
 
     String jsonString = await _loadProjectAsset();
@@ -159,7 +162,7 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Lista projektów - Zrub'),
+          title: Text('Lista projektów'),
         ),
         body: Row(
             //mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,21 +200,20 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                     ),
                     Padding(padding: const EdgeInsets.all(10.0)),
                     FutureBuilder(
-                      future: loadProjects(),
-                      builder:
-                          (context, AsyncSnapshot<List<Project>> snapshot) {
-                        List<Project> projects = snapshot.data ?? [];
-                        if (snapshot.hasData) {
-                          return Expanded(
-                              child: ListView(
-                                  children: _getProjectsWidgets(
-                                      _displayDone, projects)));
-                        } else if (snapshot.hasError) {
-                          return Text("${snapshot.error}");
-                        }
-                        return CircularProgressIndicator();
-                      },
-                    ),
+                        future: loadProjects(),
+                        builder:
+                            (context, AsyncSnapshot<List<Project>> snapshot) {
+                          List<Project> projects = snapshot.data ?? [];
+                          if (snapshot.hasData) {
+                            return Expanded(
+                                child: ListView(
+                                    children: _getProjectsWidgets(
+                                        _displayDone, projects)));
+                          } else if (snapshot.hasError) {
+                            return Text("${snapshot.error}");
+                          }
+                          return CircularProgressIndicator();
+                        }),
                   ],
                 ),
               ),
@@ -229,7 +231,9 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
                     }
-                    return CircularProgressIndicator();
+                    return Container(
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator());
                   },
                 ),
               ),
@@ -274,7 +278,14 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                       padding: const EdgeInsets.all(3.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Idź do zadań')),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      taskPage.MyTasksPage()));
+                        },
+                        child: Text('Idź do zadań')),
                     //_endProjButton() TU MUSI BYC FUTURE BUILDER w calej kolumnie
                   ],
                 ),
