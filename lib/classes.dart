@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Task {
   String taskTitle;
   String taskDesc;
@@ -19,6 +21,16 @@ class Task {
         taskIsDone: parsedJson['taskIsDone'],
         taskProgress: parsedJson['taskProgress'],
         taskTags: List<String>.from(parsedJson['taskTags']));
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "taskTitle": this.taskTitle,
+      "taskProgress": this.taskProgress,
+      "taskDesc": this.taskDesc,
+      "taskIsDone": this.taskIsDone,
+      "taskTags": jsonEncode(this.taskTags)
+    };
   }
 }
 
@@ -47,9 +59,16 @@ class Project {
         projIsDone: parsedJson['projIsDone'],
         projTasks: List<Task>.from(
             parsedJson['projTasks'].map((x) => Task.fromJson(x))));
-    //projTasks prawdopodobnie nie bedzie dzialac
-    //jesli nie to sprobowac nie wczytywac tego tutaj
-    //tylko najpierw wczytac w tasku, zrobic liste
-    //i wtedy wczytac poza konstruktorem
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "projTitle": this.projTitle,
+      "projDeadline": this.projDeadline.toIso8601String(),
+      "projProgress": this.projProgress,
+      "projDesc": this.projDesc,
+      "projIsDone": this.projIsDone,
+      "projTasks": jsonEncode(this.projTasks)
+    };
   }
 }

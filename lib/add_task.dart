@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'package:zrub/tasks.dart' as taskPage;
 import 'classes.dart';
-import 'package:hashtagable/hashtagable.dart';
 
 class MyAddTaskPage extends StatefulWidget {
   @override
