@@ -1,4 +1,9 @@
 import 'dart:convert';
+import 'package:localstorage/localstorage.dart';
+
+final LocalStorage storage = new LocalStorage('projects');
+
+ProjectList sprojs = ProjectList(items: []);
 
 class Task {
   String taskTitle;
@@ -70,5 +75,17 @@ class Project {
       "projIsDone": this.projIsDone,
       "projTasks": jsonEncode(this.projTasks)
     };
+  }
+}
+
+class ProjectList {
+  List<Project> items = [];
+
+  ProjectList({required this.items});
+
+  toJson() {
+    return items.map((item) {
+      return item.toJson();
+    }).toList();
   }
 }

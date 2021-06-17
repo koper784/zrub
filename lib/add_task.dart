@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'package:zrub/tasks.dart' as taskPage;
 import 'classes.dart';
+import 'package:localstorage/localstorage.dart';
 
 class MyAddTaskPage extends StatefulWidget {
   @override
@@ -11,6 +12,8 @@ class MyAddTaskPage extends StatefulWidget {
 }
 
 class _MyAddTaskPageState extends State<MyAddTaskPage> {
+  final LocalStorage storage = new LocalStorage('projects');
+
   Task task = Task(
       taskDesc: 'Opis...',
       taskIsDone: false,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'classes.dart';
+import 'package:localstorage/localstorage.dart';
 
 class MyEditProjPage extends StatefulWidget {
   @override
@@ -12,29 +13,43 @@ class MyEditProjPage extends StatefulWidget {
 class _MyEditProjPageState extends State<MyEditProjPage> {
   @override
   void initState() {
-    getSelProjTitle();
+    getSelProj();
     super.initState();
-    //teoretycznie moge tutaj wszystko wczytywac zamiast robic future buildery
   }
 
-  int dropdownDay = 1;
-  int dropdownMonth = 1;
-  int dropdownYear = 2021;
-  String editPageTitle = '';
+  Project sproj = Project(
+      projDeadline: DateTime.now(),
+      projDesc: 'Opis...',
+      projIsDone: false,
+      projProgress: 0.0,
+      projTasks: [],
+      projTitle: 'Pusty projekt');
 
-  void getSelProjTitle() async {
+  void getSelProj() async {
     List<Project> projs = await projPage.getProjectAsset();
     setState(() {
-      editPageTitle = projs[projPage.getSelectedProject()].projTitle;
+      sproj = projs[projPage.getSelectedProject()];
+    });
+  }
+
+  _saveToStorage() {
+    storage.setItem('projects', sprojs.toJson());
+  }
+
+  _editProject(int index, Project proj) {
+    setState(() {
+      sprojs.items[index] = proj;
+      _saveToStorage();
     });
   }
 
   final _formKey = GlobalKey<FormState>();
 
+  DateTime date = DateTime.now();
+
   Widget loadForm(Project proj) {
-    List<int> monthsList = List<int>.generate(12, (i) => i + 1);
-    List<int> daysList = List<int>.generate(31, (i) => i + 1);
-    List<int> yearsList = List<int>.generate(30, (i) => i + 2021);
+    String title = '';
+    String desc = '';
 
     return Container(
       padding: const EdgeInsets.all(10.0),
@@ -52,48 +67,39 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty || value.contains('"')) {
                     return 'Nazwa nie może być pusta i nie może zawierać cudzysłowu.';
+                  } else {
+                    title = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
+              Padding(padding: const EdgeInsets.all(3.0)),
               Row(
                 children: [
-                  Text('Deadline: dzień:'),
-                  DropdownButton<int>(
-                      value: proj.projDeadline.day,
-                      onChanged: (int? newVal) {
-                        setState(() {
-                          dropdownDay = newVal ?? 1;
+                  Text(
+                    'Deadline: ',
+                    style: TextStyle(fontSize: 20.0),
+                  ),
+                  Padding(padding: const EdgeInsets.all(3.0)),
+                  Text(
+                    '${date.day}.${date.month}.${date.year}',
+                    style: TextStyle(fontSize: 20.0),
+                  ),
+                  Padding(padding: const EdgeInsets.all(3.0)),
+                  ElevatedButton(
+                      onPressed: () {
+                        showDatePicker(
+                                context: context,
+                                initialDate: date,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2030))
+                            .then((adate) {
+                          setState(() {
+                            date = adate ?? date;
+                          });
                         });
                       },
-                      items: daysList.map<DropdownMenuItem<int>>((int val) {
-                        return DropdownMenuItem<int>(
-                            value: val, child: Text('$val'));
-                      }).toList()),
-                  Text('miesiąc:'),
-                  DropdownButton<int>(
-                      value: proj.projDeadline.month,
-                      onChanged: (int? newVal) {
-                        setState(() {
-                          dropdownMonth = newVal ?? 1;
-                        });
-                      },
-                      items: monthsList.map<DropdownMenuItem<int>>((int val) {
-                        return DropdownMenuItem<int>(
-                            value: val, child: Text('$val'));
-                      }).toList()),
-                  Text('rok:'),
-                  DropdownButton<int>(
-                      value: proj.projDeadline.year,
-                      onChanged: (int? newVal) {
-                        setState(() {
-                          dropdownYear = newVal ?? 1;
-                        });
-                      },
-                      items: yearsList.map<DropdownMenuItem<int>>((int val) {
-                        return DropdownMenuItem<int>(
-                            value: val, child: Text('$val'));
-                      }).toList()),
+                      child: Text('Wybierz date')),
                 ],
               ),
               TextFormField(
@@ -111,20 +117,22 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
                       value.contains('"') ||
                       value.length > 1000) {
                     return 'Opis nie może być pusty, musi być krótszy niż 1000 znaków i nie może zawierać cudzysłowu.';
+                  } else {
+                    desc = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
               Padding(
                 padding: const EdgeInsets.all(5.0),
                 child: ElevatedButton(
-                  child: Text('Dodaj'),
+                  child: Text('Zapisz'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('poprawnie'),
-                        //zrob walidacje daty
-                      ));
+                      proj.projTitle = title;
+                      proj.projDesc = desc;
+                      proj.projDeadline = date;
+                      _editProject(projPage.getSelectedProject(), proj);
                     }
                   },
                 ),
@@ -138,7 +146,7 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edytuj - $editPageTitle'),
+        title: Text('Edytuj - ${sproj.projTitle}'),
       ),
       body: FutureBuilder(
         future: projPage.getProjectAsset(),

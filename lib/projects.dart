@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:zrub/classes.dart';
+import 'classes.dart';
 import 'package:zrub/tasks.dart' as taskPage;
 import 'dart:convert';
 import 'edit_project.dart' as editProjPage;
@@ -31,6 +31,7 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
 
   List<Project> projects = [];
   //List<Project> projectsToSave = [];
+  bool initialized = false;
 
   static int selectedProject = 0;
 
@@ -219,21 +220,44 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                       ],
                     ),
                     Padding(padding: const EdgeInsets.all(10.0)),
+                    // FutureBuilder(
+                    //     future: loadProjects(),
+                    //     builder:
+                    //         (context, AsyncSnapshot<List<Project>> snapshot) {
+                    //       projects = snapshot.data ?? [];
+                    //       //projectsToSave = projects;
+                    //       if (snapshot.hasData) {
+                    //         return Expanded(
+                    //             child: ListView(
+                    //                 children: _getProjectsWidgets(
+                    //                     _displayDone, projects)));
+                    //       } else if (snapshot.hasError) {
+                    //         return Text("${snapshot.error}");
+                    //       }
+                    //       return CircularProgressIndicator();
+                    //     }),
                     FutureBuilder(
-                        future: loadProjects(),
-                        builder:
-                            (context, AsyncSnapshot<List<Project>> snapshot) {
-                          projects = snapshot.data ?? [];
-                          //projectsToSave = projects;
-                          if (snapshot.hasData) {
-                            return Expanded(
-                                child: ListView(
-                                    children: _getProjectsWidgets(
-                                        _displayDone, projects)));
-                          } else if (snapshot.hasError) {
-                            return Text("${snapshot.error}");
+                        future: storage.ready,
+                        builder: (context, AsyncSnapshot snapshot) {
+                          if (snapshot.data == null) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
                           }
-                          return CircularProgressIndicator();
+                          if (!initialized) {
+                            var items = storage.getItem('projects');
+                            if (items != null) {
+                              sprojs.items = List<Project>.from(
+                                (items as List)
+                                    .map((item) => Project.fromJson(item)),
+                              );
+                            }
+                            initialized = true;
+                          }
+                          return Expanded(
+                              child: ListView(
+                                  children: _getProjectsWidgets(
+                                      _displayDone, sprojs.items)));
                         }),
                   ],
                 ),
