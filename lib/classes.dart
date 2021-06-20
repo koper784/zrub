@@ -25,7 +25,8 @@ class Task {
         taskDesc: parsedJson['taskDesc'],
         taskIsDone: parsedJson['taskIsDone'],
         taskProgress: parsedJson['taskProgress'],
-        taskTags: List<String>.from(parsedJson['taskTags']));
+        taskTags: (jsonDecode(parsedJson['taskTags']) as List<dynamic>)
+            .cast<String>());
   }
 
   Map<String, dynamic> toJson() {
@@ -36,6 +37,13 @@ class Task {
       "taskIsDone": this.taskIsDone,
       "taskTags": jsonEncode(this.taskTags)
     };
+  }
+
+  void setDone() {
+    if (this.taskProgress == 1.0)
+      this.taskIsDone = true;
+    else
+      this.taskIsDone = false;
   }
 }
 
@@ -66,6 +74,16 @@ class Project {
             parsedJson['projTasks'].map((x) => Task.fromJson(x))));
   }
 
+  void setProgress() {
+    double prog = 0.0;
+
+    for (int i = 0; i < this.projTasks.length; i++) {
+      prog += this.projTasks[i].taskProgress / this.projTasks.length;
+    }
+
+    this.projProgress = prog;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       "projTitle": this.projTitle,
@@ -73,7 +91,7 @@ class Project {
       "projProgress": this.projProgress,
       "projDesc": this.projDesc,
       "projIsDone": this.projIsDone,
-      "projTasks": jsonEncode(this.projTasks)
+      "projTasks": this.projTasks.map((x) => x.toJson()).toList()
     };
   }
 }

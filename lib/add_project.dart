@@ -12,11 +12,11 @@ class MyAddProjPage extends StatefulWidget {
 class _MyAddProjPageState extends State<MyAddProjPage> {
   Project proj = Project(
       projDeadline: DateTime.now(),
-      projDesc: 'Opis...',
+      projDesc: 'description...',
       projIsDone: false,
       projProgress: 0.0,
       projTasks: [],
-      projTitle: 'Pusty projekt');
+      projTitle: 'empty project');
 
   final _formKey = GlobalKey<FormState>();
 
@@ -119,7 +119,7 @@ class _MyAddProjPageState extends State<MyAddProjPage> {
                       proj.projDesc = desc;
                       proj.projDeadline = date;
                       _addProject(proj);
-                      Navigator.pop(context);
+                      Navigator.pop(context, 'pipi');
                     }
                   },
                 ),

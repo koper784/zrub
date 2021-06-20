@@ -18,22 +18,22 @@ class MyTasksPage extends StatefulWidget {
 }
 
 class _MyTasksPageState extends State<MyTasksPage> {
-  @override
-  void initState() {
-    getSelProjTitle();
-    super.initState();
-    //teoretycznie moge tutaj wszystko wczytywac zamiast robic future buildery
-  }
-
   static int selectedTask = 0;
   bool _displayDone = false;
-  String selectedProjTitle = '';
+  String selectedProjTitle =
+      sprojs.items[projPage.getSelectedProject()].projTitle;
 
-  void getSelProjTitle() async {
-    List<Project> projs = await projPage.getProjectAsset();
+  _saveToStorage() {
+    storage.setItem('projects', sprojs.toJson());
+  }
+
+  _deleteTask() {
     setState(() {
-      selectedProjTitle = projs[projPage.getSelectedProject()].projTitle;
+      sprojs.items[projPage.getSelectedProject()].projTasks
+          .removeAt(selectedTask);
+      selectedTask = 0;
     });
+    _saveToStorage();
   }
 
   void _displayCurrentTasks() {
@@ -182,16 +182,15 @@ class _MyTasksPageState extends State<MyTasksPage> {
                     ),
                     Padding(padding: const EdgeInsets.all(10.0)),
                     FutureBuilder(
-                      future: projPage.getProjectAsset(),
-                      builder:
-                          (context, AsyncSnapshot<List<Project>> snapshot) {
-                        List<Project> projects = snapshot.data ?? [];
+                      future: storage.ready,
+                      builder: (context, AsyncSnapshot snapshot) {
                         if (snapshot.hasData) {
                           return Expanded(
                               child: ListView(
                                   children: _getTasksWidgets(
                                       _displayDone,
-                                      projects[projPage.getSelectedProject()]
+                                      sprojs
+                                          .items[projPage.getSelectedProject()]
                                           .projTasks)));
                         } else if (snapshot.hasError) {
                           return Text("${snapshot.error}");
@@ -204,16 +203,15 @@ class _MyTasksPageState extends State<MyTasksPage> {
               ),
               Expanded(
                 child: FutureBuilder(
-                  future: projPage.getProjectAsset(),
-                  builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-                    List<Project> projects = snapshot.data ?? [];
+                  future: storage.ready,
+                  builder: (context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       return Container(
                           padding: const EdgeInsets.all(8.0),
                           child: ListView(
                               children: _getTaskInfo(
                                   _displayDone,
-                                  projects[projPage.getSelectedProject()]
+                                  sprojs.items[projPage.getSelectedProject()]
                                       .projTasks[selectedTask])));
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
@@ -256,10 +254,10 @@ class _MyTasksPageState extends State<MyTasksPage> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MyAddTaskPage()));
+                          Navigator.of(context)
+                              .pushNamed('/addTask')
+                              .then((value) => setState(() {}));
+                          ;
                         },
                         child: Text('Dodaj zadanie')),
                     Padding(
@@ -267,18 +265,20 @@ class _MyTasksPageState extends State<MyTasksPage> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      editTaskPage.MyEditTaskPage()));
+                          Navigator.of(context)
+                              .pushNamed('/editTask')
+                              .then((value) => setState(() {}));
+                          ;
                         },
                         child: Text('Edytuj zadanie')),
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Usuń zadanie')),
+                        onPressed: () {
+                          _deleteTask();
+                        },
+                        child: Text('Usuń zadanie')),
                     Padding(
                       padding: const EdgeInsets.all(3.0),
                     ),

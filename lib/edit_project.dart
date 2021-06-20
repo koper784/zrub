@@ -36,9 +36,9 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
     storage.setItem('projects', sprojs.toJson());
   }
 
-  _editProject(int index, Project proj) {
+  _saveProject(Project proj) {
     setState(() {
-      sprojs.items[index] = proj;
+      sprojs.items[projPage.getSelectedProject()] = proj;
       _saveToStorage();
     });
   }
@@ -132,7 +132,8 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
                       proj.projTitle = title;
                       proj.projDesc = desc;
                       proj.projDeadline = date;
-                      _editProject(projPage.getSelectedProject(), proj);
+                      _saveProject(proj);
+                      Navigator.pop(context);
                     }
                   },
                 ),
@@ -149,11 +150,10 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
         title: Text('Edytuj - ${sproj.projTitle}'),
       ),
       body: FutureBuilder(
-        future: projPage.getProjectAsset(),
-        builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-          List<Project> projects = snapshot.data ?? [];
+        future: storage.ready,
+        builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
-            return loadForm(projects[projPage.getSelectedProject()]);
+            return loadForm(sprojs.items[projPage.getSelectedProject()]);
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           } else {

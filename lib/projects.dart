@@ -5,6 +5,7 @@ import 'package:zrub/tasks.dart' as taskPage;
 import 'dart:convert';
 import 'edit_project.dart' as editProjPage;
 import 'add_project.dart';
+import 'package:localstorage/localstorage.dart';
 
 int getSelectedProject() {
   return _MyProjectsPageState.selectedProject;
@@ -12,6 +13,12 @@ int getSelectedProject() {
 
 void setSelectedProject(int n) {
   _MyProjectsPageState.selectedProject = n;
+}
+
+setProgresses() {
+  for (int i = 0; i < sprojs.items.length; i++) {
+    sprojs.items[i].setProgress();
+  }
 }
 
 Future<List<Project>> getProjectAsset() async {
@@ -57,11 +64,31 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
     return projects;
   }
 
-  Widget _endProjButton(Project proj) {
+  _saveToStorage() {
+    storage.setItem('projects', sprojs.toJson());
+  }
+
+  _deleteProj() {
+    setState(() {
+      sprojs.items.removeAt(selectedProject);
+      selectedProject = 0;
+    });
+    _saveToStorage();
+  }
+
+  Widget _endProjButton() {
     return ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          setState(() {
+            sprojs.items[selectedProject].projIsDone =
+                !sprojs.items[selectedProject].projIsDone;
+            _saveToStorage();
+          });
+        },
         child: Text(
-          proj.projIsDone == true ? 'Wznów projekt' : 'Zakończ projekt',
+          sprojs.items[selectedProject].projIsDone == true
+              ? 'Wznów projekt'
+              : 'Zakończ projekt',
         ));
   }
 
@@ -220,65 +247,53 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                       ],
                     ),
                     Padding(padding: const EdgeInsets.all(10.0)),
-                    // FutureBuilder(
-                    //     future: loadProjects(),
-                    //     builder:
-                    //         (context, AsyncSnapshot<List<Project>> snapshot) {
-                    //       projects = snapshot.data ?? [];
-                    //       //projectsToSave = projects;
-                    //       if (snapshot.hasData) {
-                    //         return Expanded(
-                    //             child: ListView(
-                    //                 children: _getProjectsWidgets(
-                    //                     _displayDone, projects)));
-                    //       } else if (snapshot.hasError) {
-                    //         return Text("${snapshot.error}");
-                    //       }
-                    //       return CircularProgressIndicator();
-                    //     }),
                     FutureBuilder(
                         future: storage.ready,
                         builder: (context, AsyncSnapshot snapshot) {
-                          if (snapshot.data == null) {
-                            return Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          if (!initialized) {
-                            var items = storage.getItem('projects');
-                            if (items != null) {
-                              sprojs.items = List<Project>.from(
-                                (items as List)
-                                    .map((item) => Project.fromJson(item)),
-                              );
+                          if (snapshot.hasData) {
+                            if (!initialized) {
+                              var items = storage.getItem('projects');
+                              if (items != null) {
+                                sprojs.items = List<Project>.from(
+                                    items.map((x) => Project.fromJson(x)));
+                              }
                             }
                             initialized = true;
+
+                            return Expanded(
+                                child: ListView(
+                                    children: _getProjectsWidgets(
+                                        _displayDone, sprojs.items)));
+                          } else if (snapshot.hasError) {
+                            return Text("${snapshot.error}");
                           }
-                          return Expanded(
-                              child: ListView(
-                                  children: _getProjectsWidgets(
-                                      _displayDone, sprojs.items)));
+                          return CircularProgressIndicator();
                         }),
                   ],
                 ),
               ),
               Expanded(
                 child: FutureBuilder(
-                  future: loadProjects(),
-                  builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-                    projects = snapshot.data ?? [];
-                    if (snapshot.hasData) {
+                  future: storage.ready,
+                  builder: (context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData && sprojs.items.length > 0) {
                       return Container(
                           padding: const EdgeInsets.all(8.0),
                           child: ListView(
-                              children: _getProjInfo(
-                                  _displayDone, projects[selectedProject])));
+                              children: _getProjInfo(_displayDone,
+                                  sprojs.items[selectedProject])));
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
                     }
-                    return Container(
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator());
+                    if (sprojs.items.length == 0) {
+                      return Container(
+                          alignment: Alignment.center,
+                          child: Text('Nic tu nie ma'));
+                    } else {
+                      return Container(
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator());
+                    }
                   },
                 ),
               ),
@@ -314,10 +329,9 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MyAddProjPage()));
+                          Navigator.of(context)
+                              .pushNamed('/addProj')
+                              .then((value) => setState(() {}));
                         },
                         child: Text('Dodaj projekt')),
                     Padding(
@@ -325,31 +339,47 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      editProjPage.MyEditProjPage()));
+                          Navigator.of(context)
+                              .pushNamed('/editProj')
+                              .then((value) => setState(() {}));
                         },
                         child: Text('Edytuj projekt')),
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Usuń projekt')),
+                        onPressed: () {
+                          _deleteProj();
+                        },
+                        child: Text('Usuń projekt')),
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      taskPage.MyTasksPage()));
+                          Navigator.of(context)
+                              .pushNamed('/tasks')
+                              .then((value) => setState(() {}));
                         },
                         child: Text('Idź do zadań')),
-                    //_endProjButton() TU MUSI BYC FUTURE BUILDER w calej kolumnie
+                    Padding(padding: const EdgeInsets.all(10.0)),
+                    FutureBuilder(
+                      future: storage.ready,
+                      builder: (context, AsyncSnapshot snapshot) {
+                        if (snapshot.hasData && sprojs.items.length > 0) {
+                          return _endProjButton();
+                        } else if (snapshot.hasError) {
+                          return Text("${snapshot.error}");
+                        }
+                        if (sprojs.items.length == 0) {
+                          return Text('');
+                        } else {
+                          return Container(
+                              alignment: Alignment.center,
+                              child: CircularProgressIndicator());
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
