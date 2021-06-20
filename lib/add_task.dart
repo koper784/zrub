@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
-import 'package:zrub/tasks.dart' as taskPage;
 import 'classes.dart';
 
 class MyAddTaskPage extends StatefulWidget {
@@ -11,16 +10,66 @@ class MyAddTaskPage extends StatefulWidget {
 }
 
 class _MyAddTaskPageState extends State<MyAddTaskPage> {
+  bool validateTags(String str) {
+    str += ' ';
+    RegExp exp = RegExp(r"^#\w+$");
+    String word = "";
+    List<String> words = [];
+
+    for (int i = 0; i < str.length; i++) {
+      if (str[i] == ' ') {
+        if (word == "") continue;
+        words.add(word);
+        word = "";
+      } else if (str[i] != ' ') word += str[i];
+    }
+    if (words.length == 0) return false;
+    for (String w in words) {
+      if (!exp.hasMatch(w)) return false;
+    }
+    return true;
+  }
+
+  String title = '';
+  String desc = '';
+  List<String> tags = [];
+
   Task task = Task(
       taskDesc: 'Opis...',
       taskIsDone: false,
       taskProgress: 0.0,
-      taskTags: [],
+      taskTags: ['#dsds'],
       taskTitle: 'Puste zadanie');
 
-  int dropdownDay = 1;
-  int dropdownMonth = 1;
-  int dropdownYear = 2021;
+  List<String> stringToTags(String str) {
+    str += ' ';
+    List<String> tags = [];
+    String word = "";
+
+    for (int i = 0; i < str.length; i++) {
+      if (str[i] == ' ') {
+        if (word == "") continue;
+        tags.add(word);
+        word = "";
+      } else if (str[i] != ' ') {
+        word += str[i];
+      }
+    }
+
+    return tags;
+  }
+
+  _saveToStorage() {
+    storage.setItem('projects', sprojs.toJson());
+  }
+
+  _addTask(Task task) {
+    setState(() {
+      sprojs.items[projPage.getSelectedProject()].projTasks.add(task);
+      _saveToStorage();
+    });
+  }
+
   String editPageTitle = '';
 
   String _getTaskTags(Task task) {
@@ -51,8 +100,10 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty || value.contains('"')) {
                     return 'Nazwa nie może być pusta i nie może zawierać cudzysłowu.';
+                  } else {
+                    title = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
               TextFormField(
@@ -70,8 +121,10 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
                       value.contains('"') ||
                       value.length > 1000) {
                     return 'Opis nie może być pusty, musi być krótszy niż 1000 znaków i nie może zawierać cudzysłowu.';
+                  } else {
+                    desc = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
               TextFormField(
@@ -81,11 +134,12 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
                   labelText: 'Tagi',
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty || value.contains('"')) {
-                    //ZROBIC WALIDACJE REGEXEM
+                  if (value == null || value.isEmpty || !validateTags(value)) {
                     return 'Zadanie musi zawierać conajmniej jeden tag, wszystkie tagi muszą być poprawne "#tag"';
+                  } else {
+                    tags = stringToTags(value);
+                    return null;
                   }
-                  return null;
                 },
               ),
               Padding(
@@ -94,9 +148,12 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
                   child: Text('Dodaj'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('poprawnie'),
-                      ));
+                      task.taskDesc = desc;
+                      task.taskTitle = title;
+                      task.taskTags = tags;
+                      _addTask(task);
+                      projPage.setProgresses();
+                      Navigator.pop(context);
                     }
                   },
                 ),

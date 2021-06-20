@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'classes.dart';
-import 'edit_task.dart' as editTaskPage;
-import 'add_task.dart';
 
 int getSelectedTask() {
   return _MyTasksPageState.selectedTask;
@@ -18,22 +16,22 @@ class MyTasksPage extends StatefulWidget {
 }
 
 class _MyTasksPageState extends State<MyTasksPage> {
-  @override
-  void initState() {
-    getSelProjTitle();
-    super.initState();
-    //teoretycznie moge tutaj wszystko wczytywac zamiast robic future buildery
-  }
-
   static int selectedTask = 0;
   bool _displayDone = false;
-  String selectedProjTitle = '';
+  String selectedProjTitle =
+      sprojs.items[projPage.getSelectedProject()].projTitle;
 
-  void getSelProjTitle() async {
-    List<Project> projs = await projPage.getProjectAsset();
+  _saveToStorage() {
+    storage.setItem('projects', sprojs.toJson());
+  }
+
+  _deleteTask() {
     setState(() {
-      selectedProjTitle = projs[projPage.getSelectedProject()].projTitle;
+      sprojs.items[projPage.getSelectedProject()].projTasks
+          .removeAt(selectedTask);
+      selectedTask = 0;
     });
+    _saveToStorage();
   }
 
   void _displayCurrentTasks() {
@@ -46,6 +44,25 @@ class _MyTasksPageState extends State<MyTasksPage> {
     setState(() {
       _displayDone = true;
     });
+  }
+
+  List<Task> getFilteredTasks() {
+    if (tag == '') {
+      return sprojs.items[projPage.getSelectedProject()].projTasks;
+    }
+
+    List<Task> tasks = [];
+
+    for (int i = 0;
+        i < sprojs.items[projPage.getSelectedProject()].projTasks.length;
+        i++) {
+      if (sprojs.items[projPage.getSelectedProject()].projTasks[i].taskTags
+          .contains(tag)) {
+        tasks.add(sprojs.items[projPage.getSelectedProject()].projTasks[i]);
+      }
+    }
+
+    return tasks;
   }
 
   List<Widget> _getTasksWidgets(bool done, List<Task> tasks) {
@@ -130,6 +147,10 @@ class _MyTasksPageState extends State<MyTasksPage> {
     return tags;
   }
 
+  final _formKey = GlobalKey<FormState>();
+  String tag = '';
+  String tempTag = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,17 +203,13 @@ class _MyTasksPageState extends State<MyTasksPage> {
                     ),
                     Padding(padding: const EdgeInsets.all(10.0)),
                     FutureBuilder(
-                      future: projPage.getProjectAsset(),
-                      builder:
-                          (context, AsyncSnapshot<List<Project>> snapshot) {
-                        List<Project> projects = snapshot.data ?? [];
+                      future: storage.ready,
+                      builder: (context, AsyncSnapshot snapshot) {
                         if (snapshot.hasData) {
                           return Expanded(
                               child: ListView(
                                   children: _getTasksWidgets(
-                                      _displayDone,
-                                      projects[projPage.getSelectedProject()]
-                                          .projTasks)));
+                                      _displayDone, getFilteredTasks())));
                         } else if (snapshot.hasError) {
                           return Text("${snapshot.error}");
                         }
@@ -204,23 +221,26 @@ class _MyTasksPageState extends State<MyTasksPage> {
               ),
               Expanded(
                 child: FutureBuilder(
-                  future: projPage.getProjectAsset(),
-                  builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-                    List<Project> projects = snapshot.data ?? [];
-                    if (snapshot.hasData) {
+                  future: storage.ready,
+                  builder: (context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData && getFilteredTasks().length > 0) {
                       return Container(
                           padding: const EdgeInsets.all(8.0),
                           child: ListView(
-                              children: _getTaskInfo(
-                                  _displayDone,
-                                  projects[projPage.getSelectedProject()]
-                                      .projTasks[selectedTask])));
+                              children: _getTaskInfo(_displayDone,
+                                  getFilteredTasks()[selectedTask])));
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
                     }
-                    return Container(
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator());
+                    if (getFilteredTasks().length == 0) {
+                      return Container(
+                          alignment: Alignment.center,
+                          child: Text('Nic tu nie ma'));
+                    } else {
+                      return Container(
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator());
+                    }
                   },
                 ),
               ),
@@ -241,25 +261,40 @@ class _MyTasksPageState extends State<MyTasksPage> {
                       ),
                     ),
                     Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: TextField(
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: 'Wpisz tagi'),
-                        )),
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
+                      padding: const EdgeInsets.all(5.0),
+                      child: Form(
+                          key: _formKey,
+                          child: Column(children: <Widget>[
+                            TextFormField(
+                                decoration: InputDecoration(
+                                  border: UnderlineInputBorder(),
+                                  labelText: 'Wpisz tag',
+                                ),
+                                validator: (value) {
+                                  tempTag = value ?? '';
+                                  return null;
+                                }),
+                            Padding(padding: const EdgeInsets.all(3.0)),
+                            ElevatedButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    setState(() {
+                                      tag = tempTag;
+                                      selectedTask = 0;
+                                    });
+                                  }
+                                },
+                                child: Text('Szukaj')),
+                          ])),
                     ),
-                    ElevatedButton(onPressed: () {}, child: Text('Szukaj')),
                     Padding(
                       padding: const EdgeInsets.all(15.0),
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MyAddTaskPage()));
+                          Navigator.of(context)
+                              .pushNamed('/addTask')
+                              .then((value) => setState(() {}));
                         },
                         child: Text('Dodaj zadanie')),
                     Padding(
@@ -267,22 +302,22 @@ class _MyTasksPageState extends State<MyTasksPage> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      editTaskPage.MyEditTaskPage()));
+                          Navigator.of(context)
+                              .pushNamed('/editTask')
+                              .then((value) => setState(() {}));
                         },
                         child: Text('Edytuj zadanie')),
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                     ),
                     ElevatedButton(
-                        onPressed: () {}, child: Text('Usuń zadanie')),
+                        onPressed: () {
+                          _deleteTask();
+                        },
+                        child: Text('Usuń zadanie')),
                     Padding(
                       padding: const EdgeInsets.all(3.0),
                     ),
-                    //_endTaskButton() TU MUSI BYC FUTURE BUILDER w calej kolumnie
                   ],
                 ),
               ),

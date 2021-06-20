@@ -11,23 +11,31 @@ class MyAddProjPage extends StatefulWidget {
 class _MyAddProjPageState extends State<MyAddProjPage> {
   Project proj = Project(
       projDeadline: DateTime.now(),
-      projDesc: 'Opis...',
+      projDesc: 'description...',
       projIsDone: false,
       projProgress: 0.0,
       projTasks: [],
-      projTitle: 'Pusty projekt');
-
-  int dropdownDay = 1;
-  int dropdownMonth = 1;
-  int dropdownYear = 2021;
+      projTitle: 'empty project');
 
   final _formKey = GlobalKey<FormState>();
 
-  Widget loadForm(Project proj) {
-    List<int> monthsList = List<int>.generate(12, (i) => i + 1);
-    List<int> daysList = List<int>.generate(31, (i) => i + 1);
-    List<int> yearsList = List<int>.generate(30, (i) => i + 2021);
+  String title = '';
+  String desc = '';
 
+  _saveToStorage() {
+    storage.setItem('projects', sprojs.toJson());
+  }
+
+  _addProject(Project proj) {
+    setState(() {
+      sprojs.items.add(proj);
+      _saveToStorage();
+    });
+  }
+
+  DateTime date = DateTime.now();
+
+  Widget loadForm(Project proj) {
     return Container(
       padding: const EdgeInsets.all(10.0),
       child: Form(
@@ -44,48 +52,39 @@ class _MyAddProjPageState extends State<MyAddProjPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty || value.contains('"')) {
                     return 'Nazwa nie może być pusta i nie może zawierać cudzysłowu.';
+                  } else {
+                    title = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
+              Padding(padding: const EdgeInsets.all(3.0)),
               Row(
                 children: [
-                  Text('Deadline: dzień:'),
-                  DropdownButton<int>(
-                      value: proj.projDeadline.day,
-                      onChanged: (int? newVal) {
-                        setState(() {
-                          dropdownDay = newVal ?? 1;
+                  Text(
+                    'Deadline: ',
+                    style: TextStyle(fontSize: 20.0),
+                  ),
+                  Padding(padding: const EdgeInsets.all(3.0)),
+                  Text(
+                    '${date.day}.${date.month}.${date.year}',
+                    style: TextStyle(fontSize: 20.0),
+                  ),
+                  Padding(padding: const EdgeInsets.all(3.0)),
+                  ElevatedButton(
+                      onPressed: () {
+                        showDatePicker(
+                                context: context,
+                                initialDate: date,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2030))
+                            .then((adate) {
+                          setState(() {
+                            date = adate ?? date;
+                          });
                         });
                       },
-                      items: daysList.map<DropdownMenuItem<int>>((int val) {
-                        return DropdownMenuItem<int>(
-                            value: val, child: Text('$val'));
-                      }).toList()),
-                  Text('miesiąc:'),
-                  DropdownButton<int>(
-                      value: proj.projDeadline.month,
-                      onChanged: (int? newVal) {
-                        setState(() {
-                          dropdownMonth = newVal ?? 1;
-                        });
-                      },
-                      items: monthsList.map<DropdownMenuItem<int>>((int val) {
-                        return DropdownMenuItem<int>(
-                            value: val, child: Text('$val'));
-                      }).toList()),
-                  Text('rok:'),
-                  DropdownButton<int>(
-                      value: proj.projDeadline.year,
-                      onChanged: (int? newVal) {
-                        setState(() {
-                          dropdownYear = newVal ?? 1;
-                        });
-                      },
-                      items: yearsList.map<DropdownMenuItem<int>>((int val) {
-                        return DropdownMenuItem<int>(
-                            value: val, child: Text('$val'));
-                      }).toList()),
+                      child: Text('Wybierz date')),
                 ],
               ),
               TextFormField(
@@ -103,8 +102,10 @@ class _MyAddProjPageState extends State<MyAddProjPage> {
                       value.contains('"') ||
                       value.length > 1000) {
                     return 'Opis nie może być pusty, musi być krótszy niż 1000 znaków i nie może zawierać cudzysłowu.';
+                  } else {
+                    desc = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
               Padding(
@@ -113,10 +114,11 @@ class _MyAddProjPageState extends State<MyAddProjPage> {
                   child: Text('Dodaj'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('poprawnie'),
-                        //zrob walidacje daty
-                      ));
+                      proj.projTitle = title;
+                      proj.projDesc = desc;
+                      proj.projDeadline = date;
+                      _addProject(proj);
+                      Navigator.pop(context, 'pipi');
                     }
                   },
                 ),

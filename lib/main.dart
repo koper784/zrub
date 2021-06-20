@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:zrub/add_project.dart';
+import 'package:zrub/add_task.dart';
+import 'package:zrub/edit_project.dart';
+import 'package:zrub/edit_task.dart';
+import 'package:zrub/tasks.dart';
 import 'projects.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -13,7 +19,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyProjectsPage(),
+      initialRoute: '/projects',
+      routes: {
+        '/projects': (context) => MyProjectsPage(),
+        '/addProj': (context) => MyAddProjPage(),
+        '/editProj': (context) => MyEditProjPage(),
+        '/tasks': (context) => MyTasksPage(),
+        '/addTask': (context) => MyAddTaskPage(),
+        '/editTask': (context) => MyEditTaskPage()
+      },
     );
   }
 }

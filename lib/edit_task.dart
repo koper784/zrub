@@ -1,13 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'package:zrub/tasks.dart' as taskPage;
 import 'classes.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 
 class MyEditTaskPage extends StatefulWidget {
   @override
@@ -15,27 +11,25 @@ class MyEditTaskPage extends StatefulWidget {
 }
 
 class _MyEditTaskPageState extends State<MyEditTaskPage> {
-  @override
-  void initState() {
-    getSelProjTitle();
-    super.initState();
-    //teoretycznie moge tutaj wszystko wczytywac zamiast robic future buildery
-  }
+  String title = '';
+  String desc = '';
+  List<String> tags = [];
 
-  int dropdownDay = 1;
-  int dropdownMonth = 1;
-  int dropdownYear = 2021;
   String editPageTitle = '';
 
-  late List<Project> projects;
-  late Project proj = projects[projPage.getSelectedProject()];
+  _saveToStorage() {
+    storage.setItem('projects', sprojs.toJson());
+  }
 
-  void getSelProjTitle() async {
-    List<Project> projs = await projPage.getProjectAsset();
+  _editTask(Project proj) {
     setState(() {
-      editPageTitle = projs[projPage.getSelectedProject()]
+      sprojs.items[projPage.getSelectedProject()]
+              .projTasks[taskPage.getSelectedTask()] =
+          proj.projTasks[taskPage.getSelectedTask()];
+      sprojs.items[projPage.getSelectedProject()]
           .projTasks[taskPage.getSelectedTask()]
-          .taskTitle;
+          .setDone();
+      _saveToStorage();
     });
   }
 
@@ -49,6 +43,24 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
   }
 
   final _formKey = GlobalKey<FormState>();
+
+  List<String> stringToTags(String str) {
+    str += ' ';
+    List<String> tags = [];
+    String word = "";
+
+    for (int i = 0; i < str.length; i++) {
+      if (str[i] == ' ') {
+        if (word == "") continue;
+        tags.add(word);
+        word = "";
+      } else if (str[i] != ' ') {
+        word += str[i];
+      }
+    }
+
+    return tags;
+  }
 
   bool validateTags(String str) {
     str += ' ';
@@ -70,24 +82,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
     return true;
   }
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    return directory.path;
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/dzejson.json');
-  }
-
-  Future<File> writeJson(String data) async {
-    final file = await _localFile;
-
-    return file.writeAsString(data);
-  }
-
-  Widget loadForm() {
+  Widget loadForm(Project proj) {
     return Container(
       padding: const EdgeInsets.all(10.0),
       child: Form(
@@ -105,8 +100,10 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty || value.contains('"')) {
                     return 'Nazwa nie może być pusta i nie może zawierać cudzysłowu.';
+                  } else {
+                    title = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
               TextFormField(
@@ -125,20 +122,22 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
                       value.contains('"') || //wiadomo
                       value.length > 1000) {
                     return 'Opis nie może być pusty, musi być krótszy niż 1000 znaków i nie może zawierać cudzysłowu.';
+                  } else {
+                    desc = value;
+                    return null;
                   }
-                  return null;
                 },
               ),
               Slider(
-                value: proj.projTasks[taskPage.getSelectedTask()].taskProgress,
+                value: sprojs.items[projPage.getSelectedProject()]
+                    .projTasks[taskPage.getSelectedTask()].taskProgress,
                 onChanged: (newProgress) {
                   setState(() => proj.projTasks[taskPage.getSelectedTask()]
                       .taskProgress = newProgress);
                 },
                 label: proj.projTasks[taskPage.getSelectedTask()].taskProgress
-                    .round()
                     .toString(),
-                max: 100.0,
+                max: 1.0,
                 min: 0.0,
                 divisions: 100,
               ),
@@ -152,8 +151,10 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
                 validator: (value) {
                   if (value == null || value == "" || !validateTags(value)) {
                     return 'Zadanie musi zawierać conajmniej jeden tag i wszystkie tagi muszą być poprawne "#tag"';
+                  } else {
+                    tags = stringToTags(value);
+                    return null;
                   }
-                  return null;
                 },
               ),
               Padding(
@@ -163,8 +164,14 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
-                        projects[projPage.getSelectedProject()] = proj;
-                        writeJson(jsonEncode(projects));
+                        proj.projTasks[taskPage.getSelectedTask()].taskTitle =
+                            title;
+                        proj.projTasks[taskPage.getSelectedTask()].taskDesc =
+                            desc;
+                        proj.projTasks[taskPage.getSelectedTask()].taskTags =
+                            tags;
+                        _editTask(proj);
+                        projPage.setProgresses();
                         Navigator.pop(context);
                       });
                     }
@@ -183,11 +190,10 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
         title: Text('Edytuj - $editPageTitle'),
       ),
       body: FutureBuilder(
-        future: projPage.getProjectAsset(),
-        builder: (context, AsyncSnapshot<List<Project>> snapshot) {
-          projects = snapshot.data ?? [];
+        future: storage.ready,
+        builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
-            return loadForm();
+            return loadForm(sprojs.items[projPage.getSelectedProject()]);
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           } else {
