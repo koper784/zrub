@@ -1,13 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'package:zrub/tasks.dart' as taskPage;
 import 'classes.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 
 class MyEditTaskPage extends StatefulWidget {
   @override
@@ -15,12 +11,6 @@ class MyEditTaskPage extends StatefulWidget {
 }
 
 class _MyEditTaskPageState extends State<MyEditTaskPage> {
-  @override
-  void initState() {
-    getSelProjTitle();
-    super.initState();
-  }
-
   String title = '';
   String desc = '';
   List<String> tags = [];
@@ -43,15 +33,6 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
     });
   }
 
-  void getSelProjTitle() async {
-    List<Project> projs = await projPage.getProjectAsset();
-    setState(() {
-      editPageTitle = projs[projPage.getSelectedProject()]
-          .projTasks[taskPage.getSelectedTask()]
-          .taskTitle;
-    });
-  }
-
   String _getTaskTags(Task task) {
     String tags = '';
 
@@ -64,6 +45,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
   final _formKey = GlobalKey<FormState>();
 
   List<String> stringToTags(String str) {
+    str += ' ';
     List<String> tags = [];
     String word = "";
 
@@ -72,7 +54,9 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
         if (word == "") continue;
         tags.add(word);
         word = "";
-      } else if (str[i] != ' ') word += str[i];
+      } else if (str[i] != ' ') {
+        word += str[i];
+      }
     }
 
     return tags;

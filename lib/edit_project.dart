@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
 import 'classes.dart';
-import 'package:localstorage/localstorage.dart';
 
 class MyEditProjPage extends StatefulWidget {
   @override
@@ -11,12 +10,6 @@ class MyEditProjPage extends StatefulWidget {
 }
 
 class _MyEditProjPageState extends State<MyEditProjPage> {
-  @override
-  void initState() {
-    getSelProj();
-    super.initState();
-  }
-
   Project sproj = Project(
       projDeadline: DateTime.now(),
       projDesc: 'Opis...',
@@ -24,13 +17,6 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
       projProgress: 0.0,
       projTasks: [],
       projTitle: 'Pusty projekt');
-
-  void getSelProj() async {
-    List<Project> projs = await projPage.getProjectAsset();
-    setState(() {
-      sproj = projs[projPage.getSelectedProject()];
-    });
-  }
 
   _saveToStorage() {
     storage.setItem('projects', sprojs.toJson());

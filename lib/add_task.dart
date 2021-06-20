@@ -2,9 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zrub/projects.dart' as projPage;
-import 'package:zrub/tasks.dart' as taskPage;
 import 'classes.dart';
-import 'package:localstorage/localstorage.dart';
 
 class MyAddTaskPage extends StatefulWidget {
   @override
@@ -44,6 +42,7 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
       taskTitle: 'Puste zadanie');
 
   List<String> stringToTags(String str) {
+    str += ' ';
     List<String> tags = [];
     String word = "";
 
@@ -52,7 +51,9 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
         if (word == "") continue;
         tags.add(word);
         word = "";
-      } else if (str[i] != ' ') word += str[i];
+      } else if (str[i] != ' ') {
+        word += str[i];
+      }
     }
 
     return tags;

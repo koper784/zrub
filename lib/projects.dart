@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'classes.dart';
 import 'package:zrub/tasks.dart' as taskPage;
-import 'dart:convert';
-import 'edit_project.dart' as editProjPage;
-import 'add_project.dart';
-import 'package:localstorage/localstorage.dart';
 
 int getSelectedProject() {
   return _MyProjectsPageState.selectedProject;
@@ -21,48 +16,20 @@ setProgresses() {
   }
 }
 
-Future<List<Project>> getProjectAsset() async {
-  return await _MyProjectsPageState.loadProjects();
-}
-
 class MyProjectsPage extends StatefulWidget {
   @override
   _MyProjectsPageState createState() => _MyProjectsPageState();
 }
 
 class _MyProjectsPageState extends State<MyProjectsPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  List<Project> projects = [];
-  //List<Project> projectsToSave = [];
   bool initialized = false;
+
+  String tag = '';
+  String tempTag = '';
 
   static int selectedProject = 0;
 
   bool _displayDone = false;
-
-  static Future<String> _loadProjectAsset() async {
-    return await rootBundle.loadString('assets/sample_data.json');
-  }
-
-  static Future wait(int seconds) {
-    return new Future.delayed(Duration(seconds: seconds), () => {});
-  }
-
-  static Future<List<Project>> loadProjects() async {
-    //await wait(1);
-    List<Project> projects = [];
-
-    String jsonString = await _loadProjectAsset();
-    final jsonResponse = json.decode(jsonString);
-    for (int i = 0; i < jsonResponse.length; i++) {
-      projects.add(new Project.fromJson(jsonResponse[i]));
-    }
-    return projects;
-  }
 
   _saveToStorage() {
     storage.setItem('projects', sprojs.toJson());
@@ -74,6 +41,22 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
       selectedProject = 0;
     });
     _saveToStorage();
+  }
+
+  List<Project> getFilteredProjects() {
+    if (tag == '') {
+      return sprojs.items;
+    }
+
+    List<Project> projs = [];
+
+    for (int i = 0; i < sprojs.items.length; i++) {
+      if (_getProjTagsList(sprojs.items[i]).contains(tag)) {
+        projs.add(sprojs.items[i]);
+      }
+    }
+
+    return projs;
   }
 
   Widget _endProjButton() {
@@ -196,6 +179,22 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
     return tags;
   }
 
+  List<String> _getProjTagsList(Project proj) {
+    List<String> tempTags = [];
+
+    for (int i = 0; i < proj.projTasks.length; i++) {
+      for (int j = 0; j < proj.projTasks[i].taskTags.length; j++) {
+        tempTags.add(proj.projTasks[i].taskTags[j]);
+      }
+    }
+
+    tempTags = tempTags.toSet().toList();
+
+    return tempTags;
+  }
+
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -263,7 +262,7 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                             return Expanded(
                                 child: ListView(
                                     children: _getProjectsWidgets(
-                                        _displayDone, sprojs.items)));
+                                        _displayDone, getFilteredProjects())));
                           } else if (snapshot.hasError) {
                             return Text("${snapshot.error}");
                           }
@@ -276,16 +275,16 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                 child: FutureBuilder(
                   future: storage.ready,
                   builder: (context, AsyncSnapshot snapshot) {
-                    if (snapshot.hasData && sprojs.items.length > 0) {
+                    if (snapshot.hasData && getFilteredProjects().length > 0) {
                       return Container(
                           padding: const EdgeInsets.all(8.0),
                           child: ListView(
                               children: _getProjInfo(_displayDone,
-                                  sprojs.items[selectedProject])));
+                                  getFilteredProjects()[selectedProject])));
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
                     }
-                    if (sprojs.items.length == 0) {
+                    if (getFilteredProjects().length == 0) {
                       return Container(
                           alignment: Alignment.center,
                           child: Text('Nic tu nie ma'));
@@ -314,16 +313,32 @@ class _MyProjectsPageState extends State<MyProjectsPage> {
                       ),
                     ),
                     Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: TextField(
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: 'Wpisz tagi'),
-                        )),
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
+                      padding: const EdgeInsets.all(5.0),
+                      child: Form(
+                          key: _formKey,
+                          child: Column(children: <Widget>[
+                            TextFormField(
+                                decoration: InputDecoration(
+                                  border: UnderlineInputBorder(),
+                                  labelText: 'Wpisz tag',
+                                ),
+                                validator: (value) {
+                                  tempTag = value ?? '';
+                                  return null;
+                                }),
+                            Padding(padding: const EdgeInsets.all(3.0)),
+                            ElevatedButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    setState(() {
+                                      tag = tempTag;
+                                      selectedProject = 0;
+                                    });
+                                  }
+                                },
+                                child: Text('Szukaj')),
+                          ])),
                     ),
-                    ElevatedButton(onPressed: () {}, child: Text('Szukaj')),
                     Padding(
                       padding: const EdgeInsets.all(15.0),
                     ),
