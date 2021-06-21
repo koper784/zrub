@@ -38,7 +38,7 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
       taskDesc: 'Opis...',
       taskIsDone: false,
       taskProgress: 0.0,
-      taskTags: ['#dsds'],
+      taskTags: [],
       taskTitle: 'Puste zadanie');
 
   List<String> stringToTags(String str) {
@@ -135,7 +135,7 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty || !validateTags(value)) {
-                    return 'Zadanie musi zawierać conajmniej jeden tag, wszystkie tagi muszą być poprawne "#tag"';
+                    return 'Zadanie musi zawierać co najmniej jeden tag, wszystkie tagi muszą być poprawne "#tag"';
                   } else {
                     tags = stringToTags(value);
                     return null;
@@ -167,7 +167,7 @@ class _MyAddTaskPageState extends State<MyAddTaskPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edytuj - $editPageTitle'),
+        title: Text('Dodaj zadanie'),
       ),
       body: loadForm(task),
     );

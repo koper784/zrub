@@ -133,7 +133,8 @@ class _MyEditProjPageState extends State<MyEditProjPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edytuj - ${sproj.projTitle}'),
+        title: Text(
+            'Edytuj - ${sprojs.items[projPage.getSelectedProject()].projTitle}'),
       ),
       body: FutureBuilder(
         future: storage.ready,

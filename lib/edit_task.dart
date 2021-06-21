@@ -15,7 +15,8 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
   String desc = '';
   List<String> tags = [];
 
-  String editPageTitle = '';
+  String editPageTitle = sprojs.items[projPage.getSelectedProject()]
+      .projTasks[taskPage.getSelectedTask()].taskTitle;
 
   _saveToStorage() {
     storage.setItem('projects', sprojs.toJson());
@@ -150,7 +151,7 @@ class _MyEditTaskPageState extends State<MyEditTaskPage> {
                 ),
                 validator: (value) {
                   if (value == null || value == "" || !validateTags(value)) {
-                    return 'Zadanie musi zawierać conajmniej jeden tag i wszystkie tagi muszą być poprawne "#tag"';
+                    return 'Zadanie musi zawierać co najmniej jeden tag i wszystkie tagi muszą być poprawne "#tag"';
                   } else {
                     tags = stringToTags(value);
                     return null;
